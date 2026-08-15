@@ -1,18 +1,30 @@
 import { useState } from 'react'
 
-export default function CocktailCard({ cocktail, featured }) {
+export default function CocktailCard({ cocktail, featured, onClick }) {
   const [hovered, setHovered] = useState(false)
+
+  const handleKeyDown = event => {
+    if (!onClick) return
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onClick()
+    }
+  }
 
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
       style={{
         backgroundColor: hovered ? '#2C2A27' : '#232220',
         border: featured ? '1px solid rgba(201,184,150,0.3)' : '1px solid rgba(240,235,225,0.08)',
         borderRadius: '2px',
         overflow: 'hidden',
-        cursor: 'pointer',
+        cursor: onClick ? 'pointer' : 'default',
         transition: 'background-color 0.2s, border-color 0.2s',
       }}
     >

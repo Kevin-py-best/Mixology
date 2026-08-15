@@ -8,7 +8,7 @@ const OCCASIONS = ['After Dinner', 'First Date', 'Business Drinks', 'Weekend Unw
 const STRENGTHS = ['Low (Under 8% ABV)', 'Medium (8–18%)', 'Strong (Over 18%)']
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 
-export default function ExplorerPage({ searchQuery }) {
+export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
   const [selectedFlavors, setSelectedFlavors] = useState([])
   const [selectedSpirits, setSelectedSpirits] = useState([])
   const [selectedOccasions, setSelectedOccasions] = useState([])
@@ -273,7 +273,13 @@ export default function ExplorerPage({ searchQuery }) {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: '16px',
               }}>
-                {filtered.map(c => <CocktailCard key={c.id} cocktail={c} />)}
+                {filtered.map(c => (
+                  <CocktailCard
+                    key={c.id}
+                    cocktail={c}
+                    onClick={() => onSelectCocktail(c)}
+                  />
+                ))}
               </div>
             </>
           )}

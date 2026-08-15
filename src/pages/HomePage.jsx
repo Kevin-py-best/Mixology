@@ -18,7 +18,7 @@ const experienceCategories = [
   { label: 'Weekend Unwind', desc: 'Relaxed, leisurely pacing' },
 ]
 
-export default function HomePage({ onNavigate, quizAnswers }) {
+export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) {
   const [heroHovered, setHeroHovered] = useState(false)
   const featuredBar = bars[0]
   const popularCocktails = cocktails.slice(0, 4)
@@ -233,7 +233,13 @@ export default function HomePage({ onNavigate, quizAnswers }) {
             gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             gap: '16px',
           }}>
-            {personalizedCocktails.map(c => <CocktailCard key={c.id} cocktail={c} />)}
+            {personalizedCocktails.map(c => (
+              <CocktailCard
+                key={c.id}
+                cocktail={c}
+                onClick={() => onSelectCocktail(c)}
+              />
+            ))}
           </div>
         </section>
       )}
@@ -271,7 +277,13 @@ export default function HomePage({ onNavigate, quizAnswers }) {
           gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
           gap: '16px',
         }}>
-          {popularCocktails.map(c => <CocktailCard key={c.id} cocktail={c} />)}
+          {popularCocktails.map(c => (
+            <CocktailCard
+              key={c.id}
+              cocktail={c}
+              onClick={() => onSelectCocktail(c)}
+            />
+          ))}
         </div>
       </section>
 
