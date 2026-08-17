@@ -1,9 +1,12 @@
 # Mixology — Low-Level Design
 
-> **Status:** PHASE 1  
-> **Version:** 1.1  
-> **Date:** 2026-08-15  
-> **Related document:** [High-Level Design](./HIGH_LEVEL_DESIGN.md)  
+> **Status:** PHASE 1
+>
+> **Version:** 1.3
+>
+> **Date:** 2026-08-17
+>
+> **Related documents:** [High-Level Design](./HIGH_LEVEL_DESIGN.md), [Agent Handoff](./AGENT_HANDOFF.md)
 
 ## 1. Document purpose
 
@@ -33,7 +36,7 @@ It records the current component structure and identifies the concrete implement
 
 ### Current navigation model
 
-The application does not currently use a routing library. `App.jsx` stores the active page as a string:
+The prototype already has working navigation between its main screens and opens the cocktail view when a user selects a cocktail card. Its current implementation does not use a routing library; `App.jsx` stores the active page as a string:
 
 ```js
 const [page, setPage] = useState('home')
@@ -49,11 +52,11 @@ bars
 cocktail
 ```
 
-The current `cocktail` page is opened by selecting a cocktail card. The selected cocktail object and the originating page are stored in `App.jsx` so the back action can return the user to Home or Explorer.
+The current `cocktail` page is opened by selecting a cocktail card. The selected cocktail object and the originating page are stored in `App.jsx` so the back action can return the user to Home or Explorer. This navigation is already available in the prototype and should be preserved during branch integration.
 
 ### Phase 1 routing target
 
-Phase 1 will replace the local page-only navigation for detail pages with URL-based routing:
+Phase 1 will extend the working prototype navigation with URL-based routing for shareable detail pages:
 
 ```text
 /
@@ -73,7 +76,7 @@ Phase 1 routing requirements:
 - Browser refresh and direct links preserve the selected detail page.
 - Back navigation preserves the previous Explorer search and filter context where practical.
 
-The current local page state remains the prototype implementation. The Phase 1 routing work should move the selected cocktail and bar identity from in-memory objects to stable URL identifiers.
+The current local page state is the working prototype implementation. Phase 1 should keep the existing screen flow while moving the selected cocktail and bar identity from in-memory objects to stable URL identifiers where shareable detail links are required. ZR coordinates these shared routing changes as the integration owner.
 
 ### Phase 1 backend and database boundary
 
@@ -93,14 +96,15 @@ Phase 1 responsibilities:
 
 - The frontend renders screens and sends user actions to the API.
 - The Node.js/Express.js API validates requests and applies business rules.
-- Supabase PostgreSQL stores cocktails, bars, promotions, preferences, and approved activity.
+- ZR owns the Node.js/Express.js API implementation, the shared API contracts, and the integration of CX and LY requirements into the backend.
+- Supabase PostgreSQL stores cocktails, bars, promotions, preferences, saved cocktails, and approved activity.
 - Supabase Auth provides account creation, login, and authenticated sessions.
-- Quiz submission, preference storage, and personalized recommendations require an authenticated user.
+- Quiz submission, preference storage, saved cocktails, serving-bar access, and personalized recommendations require an authenticated customer.
 - Recommendation and search logic operate through the API boundary.
 - Analytics events are accepted only after the event list and privacy expectations are approved.
 - Static JavaScript data remains available as local fixtures and initial seed data, not as the production source of truth.
 
-Phase 1 will use authenticated Supabase Auth users for the personalized experience. Anonymous visitors may browse public cocktail and bar content, but they cannot submit the quiz, save preferences, or receive account-based recommendations until they sign in.
+Phase 1 will use authenticated Supabase Auth customers for protected features. Anonymous visitors may browse public cocktail education and general bar content, but they cannot submit the quiz, save cocktails, or view the serving-bar slideshow for a cocktail until they sign in.
 
 ## 3. Repository structure
 
@@ -121,8 +125,7 @@ src/
 │   └── BarsPage.jsx
 ├── data/
 │   ├── cocktails.js
-│   ├── cocktailDetails.js
-│   └── cocktails.ts
+│   └── cocktailDetails.js
 └── imports/
     ├── mixology-figma-prompt.md
     └── mixology-quiz-figma-update.md
@@ -158,9 +161,9 @@ supabase/
 
 ### Data-file note
 
-The running JSX components import [`src/data/cocktails.js`](../src/data/cocktails.js). Cocktail view metadata is stored in [`src/data/cocktailDetails.js`](../src/data/cocktailDetails.js). These files are prototype fixtures only for Phase 1; the API and database will become the production source of truth. [`src/data/cocktails.ts`](../src/data/cocktails.ts) appears to be a duplicate and should either be removed, made authoritative, or converted into shared types.
+The running JSX components import [`src/data/cocktails.js`](../src/data/cocktails.js). Cocktail view metadata is stored in [`src/data/cocktailDetails.js`](../src/data/cocktailDetails.js). These files are prototype fixtures and migration seed inputs only; the Express API reading Supabase is the Phase 1 production source of truth. The project uses JavaScript/JSX for application code, with no competing TypeScript cocktail-data file.
 
-> **TODO:** Choose one source of truth for cocktail and bar data.
+The source-of-truth decision is resolved: frontend pages use the API in production, while static JavaScript data is permitted only for local fixtures, tests, and seed/import preparation.
 
 ## 4. Application shell design
 
@@ -215,9 +218,7 @@ type Page =
   | 'bar-detail'
 ```
 
-The current implementation stores the selected cocktail object in state. A future URL-based implementation should store a stable cocktail identifier instead.
-
-> **TODO:** Define whether detail-page identifiers should be stored in state or represented by URL parameters.
+The current implementation stores the selected cocktail object in state. The Phase 1 implementation will preserve the working screen flow while representing the selected cocktail and bar with stable URL identifiers for shareable detail pages. Local state may still hold temporary UI state such as the previous page or selected slide.
 
 ## 5. Navbar design
 
@@ -262,9 +263,16 @@ onSearch(query): void
 5. If there are no matches, show a useful empty state with a way to return to Explorer.
 ```
 
-Phase 1 search requests should go through the application API, even if the API initially queries the production database directly. A dedicated search index can be added later without changing the frontend search interface.
+Phase 1 search requests will go through the Express API and use Supabase PostgreSQL queries. A dedicated search index is not required for the initial catalog and may be added later without changing the frontend search interface.
 
-> **TODO:** Select the Phase 1 search implementation and define the result-ranking rules.
+Phase 1 search ranking is deterministic:
+
+1. Exact cocktail ID or exact cocktail/bar name match.
+2. Name prefix match.
+3. Partial match in approved searchable fields such as origin, taste tags, spirits, occasions, and bar neighborhood.
+4. Alphabetical order by display name as the final tie-breaker.
+
+If there is one exact match, the frontend opens its detail page directly. Otherwise, the frontend displays grouped cocktail and bar results. The API must normalize whitespace and case before searching.
 
 ## 6. Homepage design
 
@@ -309,7 +317,6 @@ The current “personalized” arrays are fixed slices and do not use recommenda
 ```ts
 type RecommendationContext = {
   quizAnswers: QuizAnswers
-  ratings?: UserRating[]
   viewedCocktails?: UserActivity[]
   location?: UserLocation
 }
@@ -332,8 +339,8 @@ File: [`src/pages/QuizPage.jsx`](../src/pages/QuizPage.jsx)
 ```ts
 type QuizAnswers = {
   spirit: string
-  flavor: string
-  strength: string
+  tasteTag: string
+  strength: 1 | 2 | 3 | 4 | 5
   occasion: string
 }
 ```
@@ -343,7 +350,7 @@ type QuizAnswers = {
 | Step | Key | Question |
 |---:|---|---|
 | 1 | `spirit` | What spirit do you reach for? |
-| 2 | `flavor` | What flavor profile calls to you? |
+| 2 | `tasteTag` | What taste profile calls to you? |
 | 3 | `strength` | How strong do you like it? |
 | 4 | `occasion` | What’s the occasion, most often? |
 
@@ -400,7 +407,7 @@ const [sidebarOpen, setSidebarOpen] = useState(false)
 Currently implemented:
 
 - Search by cocktail name, spirit, or bar name.
-- Flavor filtering.
+- Taste-tag filtering.
 - Spirit filtering.
 - A–Z sorting.
 - Rating sorting.
@@ -424,14 +431,28 @@ Currently stored but not applied to results:
 
 ```ts
 type CocktailFilters = {
-  flavors: string[]
+  tasteTags: string[]
   spirits: string[]
   occasions: string[]
-  strength?: 'low' | 'medium' | 'strong'
+  strength?: 1 | 2 | 3 | 4 | 5
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced'
   search?: string
 }
 ```
+
+### Five-level alcoholic-intensity scale
+
+Phase 1 will use the following simple five-level scale rather than the current low/medium/strong values:
+
+| Level | Label | Meaning |
+|---:|---|---|
+| 1 | Very light | Low perceived alcoholic intensity; light and easy to approach |
+| 2 | Light | Noticeable alcohol but generally gentle |
+| 3 | Moderate | Balanced alcoholic presence |
+| 4 | Strong | Alcohol is a clear part of the experience |
+| 5 | Very strong | High perceived alcoholic intensity; intended for experienced drinkers |
+
+This scale is accepted for Phase 1. It describes the user’s drinking experience, not only the alcohol percentage of one ingredient. Spirit quantity, dilution, serving size, mixers, and the final balance should be considered when assigning the level. Exact ABV should not be shown unless Mixology has reliable source data.
 
 ### Phase 1 filter semantics
 
@@ -444,7 +465,7 @@ No selected values: do not restrict by that group
 Example:
 
 ```text
-Selected flavors: Citrus, Floral
+Selected taste tags: Citrus, Floral
 Selected spirits: Gin
 
 Result:
@@ -455,7 +476,7 @@ Result:
 ### Phase 1 sort model
 
 ```ts
-type CocktailSort = 'popularity' | 'a-z' | 'newest' | 'rating'
+type CocktailSort = 'popularity' | 'a-z' | 'newest'
 ```
 
 Required data fields:
@@ -463,10 +484,9 @@ Required data fields:
 ```text
 popularityScore: number
 createdAt: date
-rating: number
 ```
 
-> **TODO:** Define how popularity is calculated and whether “Newest” is based on cocktail creation date, listing date, or editorial publication date.
+`popularityScore` is a Mixology-managed numeric value used for the initial popularity sort. “Newest” uses the cocktail record’s `createdAt` value. Phase 1 does not use user ratings or review scores.
 
 ### Empty state
 
@@ -508,6 +528,8 @@ onClick?: () => void
 - Opens the cocktail view page when an `onClick` callback is provided.
 - Supports keyboard activation with Enter and Space.
 
+The current prototype may display rating data from its static fixtures, but ratings and reviews are not part of the Phase 1 contract and must not be added to the production API or database model.
+
 ### Phase 1 props
 
 ```ts
@@ -547,14 +569,22 @@ The page is organized into four main areas:
 2. Main detail hero:
    - Interactive 3D-style cocktail viewer on the left.
    - Taste profile below the viewer.
-   - Cocktail name and place-of-birth card on the right.
-   - Drinker profile, spirit, strength, and occasion facts below the identity card.
+   - Cocktail name and origin card on the right.
+   - Drinker profile, multiple spirits, five-level alcoholic intensity, and multiple occasions below the identity card.
 3. Serving-bar slideshow.
 4. Full-width history card with read-aloud action.
 
 ### Phase 1 product priority
 
-`CocktailDetailPage` is the primary learning experience in Phase 1. The page must provide enough history, taste, origin, and cocktail facts for a user to understand the drink without taking the taste quiz or logging in. Recommendations and bar discovery are supporting actions that can continue from this page.
+`CocktailDetailPage` is the primary learning experience in Phase 1. The page must provide enough history, taste, origin, and cocktail facts for a user to understand the drink without taking the taste quiz or logging in. The serving-bar slideshow is a protected supporting feature: the user must log in before its cards are loaded or opened.
+
+### Saved-cocktail behavior
+
+- Show a save or favorite action on the cocktail card and/or detail page.
+- Authenticated customers can save a cocktail through the protected API.
+- Unauthenticated users see a login prompt when they try to save a cocktail.
+- Saved cocktails are linked to the customer account through the `saved_cocktails` table.
+- Customers can later view their saved cocktails from the customer experience.
 
 ### Current local state
 
@@ -576,29 +606,36 @@ The base cocktail record comes from [`src/data/cocktails.js`](../src/data/cockta
 
 ```ts
 type CocktailDetailMetadata = {
-  placeOfBirth: string
   origin: string
   tasteTitle: string
   tasteDescription: string
   tastingNotes: string[]
+  tasteTags: string[]
   whoDrinks: string
-  strength: string
-  occasion: string
+  spirits: string[]
+  strength: 1 | 2 | 3 | 4 | 5
+  occasions: string[]
   history: string
   readAloud: string
-  servingBarIds: number[]
+  servingBarIds: string[]
 }
 ```
 
+The prototype’s `servingBarIds` field is a fixture-level relationship reference. In Phase 1, the relationship is stored in `bar_cocktails` and loaded through the authenticated serving-bar endpoint; the public educational response does not expose the bar cards.
+
 ### Serving-bar slideshow behavior
 
-- Resolves `servingBarIds` against the static `bars` collection.
-- Falls back to the first bar if no relationship is available.
+- Requests serving-bar cards from the protected API after the customer is authenticated.
+- Shows a login prompt instead of loading serving-bar cards for an unauthenticated user.
+- Resolves each returned bar ID to a small `BarSummary` card.
 - Displays one active bar slide at a time.
 - Supports previous and next controls.
 - Supports direct selection using slide indicator buttons.
-- Displays the bar image, name, neighborhood, vibe, and promotion.
-- The “Explore the bars” action navigates to the Bars page.
+- Displays the bar image, name, neighborhood, vibe, and partner status.
+- Receives active bars in Mixology’s curated order, with featured or partner bars allowed to appear first.
+- Keeps promotion details out of `BarSummary`; the bar detail page or a separate promotion response can display them.
+- Clicking a bar card navigates to `/bars/:barId`.
+- Shows an explicit empty state when the cocktail has no active serving bars.
 
 ### History read-aloud behavior
 
@@ -643,7 +680,7 @@ Cocktail3DViewer
   exposes reset and loading/error states
 ```
 
-> **TODO:** Decide whether the CSS viewer is sufficient or whether production requires Three.js/WebGL and artist-created cocktail assets.
+Phase 1 will keep the CSS-based interactive viewer. A true Three.js/WebGL viewer and artist-created model assets are later-phase work.
 
 ## 12. Bars page design
 
@@ -676,9 +713,9 @@ Phase 1 target behavior:
 
 ### Partner promotions and featured placements
 
-Phase 1 will support partner visibility without requiring a self-service partner dashboard. Mixology administrators will create, review, update, activate, and expire partner-bar profiles and promotions on behalf of partner bars.
+Phase 1 will display partner bars without giving bar owners accounts or editing control. Mixology will manage the displayed bar profiles, featured placements, and promotions through data workflows or internal administration.
 
-The long-term product direction is a partner portal that allows bars to maintain their own profiles and promotions while Mixology retains approval, quality, and featured-placement controls.
+In a future phase, Mixology may build an internal drag-and-drop administration page for the Mixology team to update the order and presentation of bar details. This is not a bar-owner portal.
 
 Partner bars may receive:
 
@@ -689,7 +726,7 @@ Partner bars may receive:
 - Promotion details on the bar detail page.
 - Promotion details on a cocktail page when the bar serves that cocktail.
 
-Promotions may initially be stored in static data or managed through an internal Mixology administration workflow. Partner bars will provide the content, but will not directly edit the Phase 1 application data.
+Promotions may initially be stored in static data or managed through an internal Mixology administration workflow. Partner bars do not directly edit the Phase 1 application data.
 
 ```ts
 type Promotion = {
@@ -776,25 +813,26 @@ type Cocktail = {
 }
 ```
 
-### Current cocktail detail metadata model
+### Current prototype cocktail detail metadata model
 
 ```ts
-type CocktailDetailMetadata = {
-  placeOfBirth: string
+type PrototypeCocktailDetailMetadata = {
   origin: string
   tasteTitle: string
   tasteDescription: string
   tastingNotes: string[]
+  tasteTags: string[]
   whoDrinks: string
-  strength: string
-  occasion: string
+  spirits: string[]
+  strength: 1 | 2 | 3 | 4 | 5
+  occasions: string[]
   history: string
   readAloud: string
-  servingBarIds: number[]
+  servingBarIds: string[]
 }
 ```
 
-The detail metadata is keyed by the base cocktail ID and is resolved through `getCocktailDetails(id)`. A fallback metadata object is returned when a cocktail does not yet have a dedicated entry.
+The detail metadata is keyed by the base cocktail ID and is resolved through `getCocktailDetails(id)` in the prototype. The prototype may use fallback data while fixtures are incomplete, but the Phase 1 seed process and API must reject incomplete cocktail records instead of returning fallback metadata.
 
 ### Phase 1 cocktail model
 
@@ -803,17 +841,14 @@ type Cocktail = {
   id: string
   name: string
   description: string
-  spirit: Spirit
-  flavors: Flavor[]
-  tags: string[]
-  strength: Strength
+  spirits: Spirit[]
+  tasteTags: string[]
+  strength: 1 | 2 | 3 | 4 | 5
   experienceLevel: ExperienceLevel
   occasions: Occasion[]
-  rating: number
   popularityScore: number
   createdAt: string
   imageUrl: string
-  servingBars: BarReference[]
 }
 ```
 
@@ -827,17 +862,38 @@ type CocktailDetail = Cocktail & {
 }
 ```
 
-`CocktailDetailMetadata` should contain the cocktail’s place of birth or origin, taste title and description, tasting notes, drinker profile, strength, occasion, history, read-aloud text, and serving-bar relationships.
+```ts
+type CocktailDetailMetadata = {
+  origin: string
+  tasteTitle: string
+  tasteDescription: string
+  tastingNotes: string[]
+  whoDrinks: string
+  history: string
+  readAloud: string
+}
+
+type ServingBarResponse = {
+  bars: BarSummary[]
+}
+```
+
+Every property in the Phase 1 cocktail and cocktail-detail models is required. The API must not omit a field or return `null` for required cocktail education content. Array fields must always be present; a relationship with no matching records is represented by an empty array in its relationship response. Each seeded cocktail must contain its origin, taste information, tasting notes, drinker profile, spirits, strength, occasions, history, read-aloud text, and image before it is published.
+
+The combined `Cocktail` and `CocktailDetailMetadata` response contains the cocktail’s origin, taste title and description, taste tags, tasting notes, drinker profile, multiple spirits, five-level alcoholic intensity, multiple occasions, history, read-aloud text, image, and required base metadata. The `bar_cocktails` relationship is stored in Supabase and is exposed through the protected serving-bar endpoint rather than the public educational response. User reviews and ratings are not part of this model. ZR will write the cocktail history, provide the cocktail images, and create the initial cocktail seed data. Phase 1 will not introduce a separate cocktail-content review status or review workflow.
 
 ### Supporting enums
 
 ```ts
-type Strength = 'low' | 'medium' | 'strong'
-type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced'
-type Occasion = 'after-dinner' | 'first-date' | 'business-drinks' | 'weekend-unwind'
+type AlcoholicIntensity = 1 | 2 | 3 | 4 | 5
+type TasteTag = string
+type Spirit = string
+type Vibe = string
+type ExperienceLevel = string
+type Occasion = string
 ```
 
-> **TODO:** Confirm the authoritative vocabulary for flavors, spirits, vibes, occasions, and experience levels.
+The final controlled vocabulary for taste tags, spirits, vibes, occasions, and experience levels is intentionally deferred until the content taxonomy is reviewed. During early development, seed data may use non-empty string values. Agents must reuse values already present in the seed data and must not invent competing spellings. The final vocabulary must be approved before Phase 1 filters and recommendation matching are considered complete.
 
 ## 14. Recommendation design
 
@@ -854,7 +910,6 @@ type RecommendationInput = {
   quizAnswers: QuizAnswers
   cocktails: Cocktail[]
   userActivity?: UserActivity[]
-  userRatings?: UserRating[]
 }
 
 type RecommendationResult = {
@@ -868,20 +923,19 @@ Initial Phase 1 score components:
 
 ```text
 Spirit match       25%
-Flavor match       30%
+Taste-tag match    35%
 Strength match     15%
 Occasion match     15%
 Popularity          5%
-Rating              5%
 View/activity data  5%
 ```
 
-These weights are an initial proposal and should be reviewed before implementation. The service should return both a score and human-readable reasons so the UI can explain recommendations.
+These weights are the initial Phase 1 proposal. The service should return both a score and human-readable reasons so the UI can explain recommendations. Ratings and reviews are intentionally excluded from the Phase 1 score.
 
 Example reason:
 
 ```text
-Recommended because you chose Gin and Citrus & Bright.
+Recommended because you chose Gin and the Citrus & Bright taste tag.
 ```
 
 Phase 1 rules should also define tie-breaking and cold-start behavior. A user’s quiz match should remain more important than a small amount of browsing activity.
@@ -898,16 +952,19 @@ type PreferenceStore = {
   getQuizAnswers(): QuizAnswers | null
   recordCocktailView(cocktailId: string): void
   getViewedCocktailIds(): string[]
+  saveCocktail(cocktailId: string): void
+  removeSavedCocktail(cocktailId: string): void
+  getSavedCocktailIds(): string[]
 }
 ```
 
-For Phase 1, the primary adapter will use the backend API and Supabase database for authenticated users. Browser `localStorage` may be used only as a temporary cache or offline fallback; it is not the production source of truth. Anonymous visitors cannot save quiz answers or receive account-based personalized recommendations.
+For Phase 1, the primary adapter will use the backend API and Supabase database for authenticated customers. Browser `localStorage` may be used only as a temporary cache or offline fallback; it is not the production source of truth. Anonymous visitors cannot save quiz answers, save cocktails, receive account-based personalized recommendations, or view the serving-bar slideshow.
 
 ## 15. Navigation and detail pages
 
 ### Phase 1 route model
 
-Phase 1 should use URL-based routing for shareable cocktail and bar pages:
+Phase 1 should preserve the prototype’s working navigation and use URL-based destinations for shareable cocktail and bar pages:
 
 ```text
 /
@@ -930,15 +987,16 @@ Phase 1 should use URL-based routing for shareable cocktail and bar pages:
 - Search result opens the matching entity.
 - Back navigation preserves the previous search/filter context where practical.
 
-> **TODO:** Choose the routing library and confirm the search-results URL format.
+The prototype already provides the basic screen-to-screen navigation. ZR, as integration owner, coordinates any change needed to support stable URL identifiers without breaking that existing flow.
 
 ## 16. Phase 1 API boundary
 
-The current prototype has no API. Phase 1 will introduce an application API so the frontend can use backend and database-backed data.
+The current prototype has no API. Phase 1 will introduce an application API so the frontend can use backend and database-backed data. ZR owns the Express API and the shared integration of the frontend branches into that API.
 
 ```text
 GET    /api/v1/cocktails
 GET    /api/v1/cocktails/:id
+GET    /api/v1/cocktails/:id/serving-bars
 GET    /api/v1/bars
 GET    /api/v1/bars/:id
 GET    /api/v1/search?q={query}
@@ -948,6 +1006,9 @@ GET    /api/v1/promotions
 GET    /api/v1/me/preferences
 PUT    /api/v1/me/preferences
 POST   /api/v1/me/activity
+GET    /api/v1/me/saved-cocktails
+POST   /api/v1/me/saved-cocktails/:cocktailId
+DELETE /api/v1/me/saved-cocktails/:cocktailId
 POST   /api/v1/analytics/events
 
 Internal administration endpoints:
@@ -963,13 +1024,13 @@ GET    /api/v1/admin/analytics/events
 Example Explorer request:
 
 ```text
-GET /api/v1/cocktails?flavor=citrus&spirit=gin&sort=rating&page=1&pageSize=24
+GET /api/v1/cocktails?tasteTag=citrus&spirit=gin&sort=popularity&page=1&pageSize=24
 ```
 
 Phase 1 API requirements:
 
 - Validate all incoming query and body values.
-- Require a valid Supabase Auth bearer token for quiz, preference, activity, recommendation, and administration endpoints.
+- Require a valid Supabase Auth bearer token for quiz, preference, saved-cocktail, serving-bar, activity, recommendation, and administration endpoints.
 - Apply authorization to internal administration endpoints.
 - Return stable IDs for cocktails, bars, promotions, and authenticated users.
 - Support pagination for cocktail, bar, and search results.
@@ -977,6 +1038,18 @@ Phase 1 API requirements:
 - Log technical error details on the server without exposing them to the user.
 - Keep recommendation and search logic behind server-side service boundaries.
 - Version the API so future changes do not silently break the frontend.
+
+In simple English, these API requirements are the rules for how the frontend asks the Express backend for data. Each endpoint must say what it does, whether login is required, what input it accepts, what it returns, and what the user sees if something fails. This lets CX, LY, and ZR build their pages against the same backend behavior.
+
+### API contract change policy
+
+The examples in this document are the initial Phase 1 contract, not a permanent restriction. The API may change while Phase 1 is being developed, but changes must be coordinated by ZR as the API and integration owner.
+
+- Backward-compatible changes, such as adding a new optional response field, should be documented and communicated to the frontend owners.
+- Breaking changes, such as renaming a field, removing a field, changing a field type, or changing an authentication requirement, require the API documentation, frontend code, and tests to be updated together.
+- Do not silently change an endpoint or response shape in one branch.
+- If a breaking change is required after an API has been released, add a new version such as `/api/v2` rather than unexpectedly changing `/api/v1`.
+- The low-level design and the shared agent handoff document are the written source of truth for the current contract.
 
 ### Cocktail detail response
 
@@ -986,22 +1059,94 @@ Phase 1 API requirements:
 type CocktailDetailResponse = {
   cocktail: Cocktail
   detail: CocktailDetailMetadata
-  servingBars: BarSummary[]
 }
 
 type BarSummary = {
   id: string
   name: string
   neighborhood: string
-  vibe: BarVibe
+  vibe: string
   partner: boolean
   imageUrl?: string
 }
 ```
 
-The response should include the cocktail’s history, read-aloud text, taste description, tasting notes, place of birth or origin, spirit, strength, occasion, drinker profile, visual media, and related bars. The frontend should not need to reconstruct the educational content from several unrelated static files in production.
+Example public response:
+
+```json
+{
+  "cocktail": {
+    "id": "straits-sling",
+    "name": "Straits Sling",
+    "description": "A Singapore cocktail with a fruity, refreshing profile.",
+    "spirits": ["gin", "cherry brandy"],
+    "tasteTags": ["fruity", "sweet", "citrus"],
+    "strength": 3,
+    "experienceLevel": "intermediate",
+    "occasions": ["evening", "celebration"],
+    "popularityScore": 85,
+    "createdAt": "2026-08-17T00:00:00.000Z",
+    "imageUrl": "https://example.com/cocktails/straits-sling.png"
+  },
+  "detail": {
+    "origin": "Singapore",
+    "tasteTitle": "Fruity and refreshing",
+    "tasteDescription": "A bright, fruity cocktail with a noticeable but balanced spirit finish.",
+    "tastingNotes": ["cherry", "citrus", "herbal"],
+    "whoDrinks": "People who enjoy fruity and approachable cocktails.",
+    "history": "The cocktail history is stored here.",
+    "readAloud": "The spoken version of the cocktail history is stored here."
+  }
+}
+```
+
+Example protected serving-bar response:
+
+```json
+{
+  "bars": [
+    {
+      "id": "atlas-bar",
+      "name": "Atlas Bar",
+      "neighborhood": "Bugis",
+      "vibe": "Elegant and historic",
+      "partner": true,
+      "imageUrl": "https://example.com/bars/atlas-bar.png"
+    }
+  ]
+}
+```
+
+If no active bar serves the cocktail, the protected response still includes the required `bars` field as an empty array:
+
+```json
+{
+  "bars": []
+}
+```
+
+The public response should include the cocktail’s history, read-aloud text, taste description, taste tags, tasting notes, origin, multiple spirits, five-level alcoholic intensity, multiple occasions, drinker profile, and visual media. The protected serving-bar endpoint returns `BarSummary[]` after the customer is authenticated. The frontend should not need to reconstruct the educational content from several unrelated static files in production.
 
 Node.js and Express.js are the selected Phase 1 backend technologies. Supabase PostgreSQL, Supabase Auth, and Supabase Storage are the selected Phase 1 Supabase services. The production hosting provider remains undecided. The API error response should remain generic to users while server logs retain actionable technical details.
+
+### Database names and API names
+
+Database column names and API field names serve different purposes. Supabase database columns will use `snake_case`, while JavaScript objects and JSON responses will use `camelCase`. The Express repository or mapper layer converts between them so frontend components do not need to know the database naming convention.
+
+Example mapping:
+
+```text
+Supabase column: cocktails.created_at
+API field:       cocktail.createdAt
+
+Supabase column: cocktail_detail_metadata.taste_tags
+API field:       detail.tasteTags
+
+Supabase column: cocktail_detail_metadata.read_aloud
+API field:       detail.readAloud
+```
+
+This means that a database migration can use `taste_tags`, while the frontend continues to use `tasteTags`. ZR owns and documents these mappings as part of the API contract.
 
 ### Phase 1 database model
 
@@ -1016,7 +1161,9 @@ bars
 bar_cocktails
 promotions
 authenticated_users (Supabase Auth identities)
+user_profiles (customer or admin role)
 user_preferences
+saved_cocktails
 user_activity
 analytics_events
 ```
@@ -1027,7 +1174,9 @@ Important relationships:
 bar_cocktails links bars to cocktails
 promotions belong to bars
 cocktail_detail_metadata belongs to cocktails
+user_profiles extends authenticated user information with the application role
 user_preferences belong to authenticated Supabase Auth users
+saved_cocktails links authenticated customers to cocktails
 user_activity belongs to authenticated Supabase Auth users
 analytics_events may reference an authenticated user and an entity
 ```
@@ -1035,16 +1184,23 @@ analytics_events may reference an authenticated user and an entity
 Database requirements:
 
 - Use stable IDs for all primary entities.
+- Make every Phase 1 cocktail-detail field `NOT NULL`; use an empty array rather than a missing or `NULL` relationship list when a cocktail has no related records.
 - Add created and updated timestamps to managed records.
 - Store promotion start/end times and active status inputs.
 - Add indexes for cocktail search fields, bar names, neighborhoods, and promotion status.
+- Add a unique constraint so one customer cannot save the same cocktail more than once.
+- Store application roles in `user_profiles.role` with only `customer` and `admin` values in Phase 1.
+- Link `user_profiles.auth_user_id` to the Supabase Auth user identity and make it unique.
+- Apply row-level security and backend authorization so customers cannot access administrator records or operations.
 - Use migrations for schema changes.
 - Back up production data and document restore procedures.
-- Keep administrative changes auditable before the long-term partner portal is introduced.
+- Keep administrative changes auditable before the future internal bar-management page is introduced.
+
+ZR owns the Supabase schema, migrations, and initial cocktail seed data. LY supplies the bar data requirements and bar-to-cocktail relationships that must be represented in that shared schema. CX supplies customer-authentication and quiz-data requirements. No branch should create a competing schema or migration set.
 
 ### Phase 1 analytics and measurement
 
-Mixology will build its own lightweight analytics dashboard for administrators. Approved events will be stored in the `analytics_events` table in Supabase and read through protected administration endpoints. The event list, data fields, and privacy expectations must still be discussed and approved before analytics is enabled for real users.
+CX will build the Mixology-owned lightweight analytics dashboard for administrators. Approved events will be stored in the `analytics_events` table in Supabase and read through protected administration endpoints. ZR owns the analytics table and migration work as part of the database. The event list, data fields, and privacy expectations must still be discussed and approved before analytics is enabled for real users.
 
 Candidate Phase 1 events:
 
@@ -1185,7 +1341,7 @@ Mobile:
 - User applies multiple filters.
 - User opens a cocktail detail page.
 - User rotates the cocktail viewer and resets its position.
-- User moves through bars serving the selected cocktail.
+- Authenticated customer loads the protected serving-bar slideshow and opens a bar detail page.
 - User reads the cocktail history aloud.
 - User opens a bar from the map.
 - User uses the filter controls on a mobile viewport.
@@ -1206,17 +1362,17 @@ Mobile:
 ### Phase 1 implementation sequence
 
 1. Set up the Node.js/Express.js API project and Supabase PostgreSQL, Auth, and Storage services, then confirm the API hosting approach.
-2. Define the versioned Phase 1 API contract, logical database schema, migration strategy, and data ownership rules.
-3. Implement the API and Supabase data-access layer, including migrations, backups, and seed/import scripts based on the current static fixtures.
-4. Select one authoritative domain model and define shared types for cocktail details, history, taste, spirits, flavors, occasions, strengths, and levels.
+2. CX defines customer, quiz, authentication, and analytics API requirements; LY defines bar, bar-detail, OneMap, and promotion API requirements; ZR owns the versioned Phase 1 API contract, Express implementation, logical database schema, migration strategy, and data ownership rules.
+3. ZR implements the Supabase data-access layer, migrations, backups, and seed/import scripts based on the current static fixtures.
+4. Select one authoritative domain model and define shared types for cocktail details, history, taste tags, multiple spirits, multiple occasions, five-level alcoholic intensity, saved cocktails, and bar summaries.
 5. Seed the first-class cocktail-detail data and implement `GET /api/v1/cocktails/:id` as a composed educational detail response.
-6. Connect frontend repositories to the API. Keep static JavaScript data only as local development fixtures, test data, or migration seed data.
-7. Replace local cocktail object navigation with URL-based routing, including `/login` and `/cocktails/:cocktailId`.
+6. ZR coordinates the shared API integration while CX and LY connect their pages to the agreed endpoints. Keep static JavaScript data only as local development fixtures, test data, or migration seed data.
+7. Connect the existing cocktail-card navigation to stable URL-based destinations, including `/login` and `/cocktails/:cocktailId`, without changing the working screen flow.
 8. Make `CocktailDetailPage` API-backed and complete the core learning flow: visual viewer, taste profile, facts, serving bars, history, and read-aloud.
 9. Complete Explorer filtering, sorting, and direct search for cocktails and bars.
 10. Add explicit popularity and creation-date fields for discovery ranking.
 11. Implement recommendation scoring using quiz answers and approved user activity behind the API boundary.
-12. Require Supabase Auth for the quiz and persist quiz answers and discovery history through the backend storage adapter.
+12. Require Supabase Auth for the quiz, saved cocktails, and serving-bar access, then persist quiz answers, saved cocktails, and discovery history through the backend storage adapter.
 13. Add bar detail navigation and the Phase 1 bar detail page.
 14. Replace the mock map with OneMap and coordinate-based markers.
 15. Add Phase 1 partner-promotion rules, active-date validation, and clear partner labels.
@@ -1228,9 +1384,9 @@ Mobile:
 
 - Evaluate whether the CSS viewer should be replaced with a true 3D model viewer.
 - Add advanced analytics reporting, segmentation, and exports.
-- Build a long-term partner portal/business dashboard for profile maintenance.
-- Allow partner bars to update their profiles, cocktail listings, images, and promotions.
-- Add Mixology review, approval, publishing, and audit controls for partner changes.
+- Build a future internal Mixology admin page for bar-detail management.
+- Add a drag-and-drop interface for reordering or arranging bar-detail content.
+- Add Mixology publishing and audit controls for internal bar changes.
 - Add advanced partner promotion scheduling and management.
 - Evaluate cocktail ordering, delivery, and reservations.
 - Evaluate payments, subscriptions, and other commercial workflows.
@@ -1242,28 +1398,31 @@ Mobile:
 
 | Topic | Current behavior | Proposed decision | Owner | Status |
 |---|---|---|---|---|
-| Product priority | Feature flow is not yet ranked | Cocktail detail and education first; quiz, recommendations, and bars support it | TODO | Confirmed |
-| Routing | Local page string | Phase 1 URL-based routing | TODO | Planned |
-| Backend/API | No backend in prototype | Node.js/Express.js Phase 1 application API | TODO | Confirmed |
-| Database | No database in prototype | Supabase PostgreSQL Phase 1 production database | TODO | Confirmed |
-| Data source | Static JavaScript | API/database source of truth; static fixtures for development | TODO | Planned |
-| Backend framework | Not applicable in prototype | Node.js and Express.js | TODO | Confirmed |
-| Database engine | Not applicable in prototype | Supabase PostgreSQL | TODO | Confirmed |
-| Identity/authentication | No user identity | Supabase Auth; login required for quiz and personalized recommendations | TODO | Confirmed |
-| Type system | JSX with duplicate TS data | TODO | TODO | Open |
-| Search | Explorer filtering | Phase 1 direct cocktail/bar results | TODO | Planned |
-| Recommendations | Fixed array slices | Phase 1 scoring from quiz and activity | TODO | Planned |
-| Map | CSS mock map | OneMap with real coordinates | TODO | Confirmed |
-| Media storage | External image URLs | Supabase Storage for Mixology-managed media | TODO | Confirmed |
-| Cocktail detail metadata | Static `cocktailDetails.js` | Phase 1 data adapter or API source | TODO | Planned |
-| 3D viewer | CSS-based presentation | Keep CSS viewer in Phase 1; true model later | TODO | Planned |
-| History narration | Browser Web Speech API | Keep as optional Phase 1 enhancement | TODO | Planned |
-| Bar detail page | Not implemented | Phase 1 bar detail route and page | TODO | Planned |
-| Partner promotions | Static partner flag and promo | Phase 1 static/admin-managed active promotions | TODO | Planned |
-| Partner profile ownership | Mixology-managed in Phase 1 | Long-term partner portal with Mixology approval | TODO | Long term |
-| Mobile filters | Bottom-sheet code present but trigger hidden | Complete Phase 1 responsive behavior | TODO | Planned |
-| Analytics events | Not implemented | Approve event list, store events in Supabase, and provide a Mixology-admin dashboard | TODO | Pending approval |
-| Advanced analytics | Not implemented | Later-phase reporting, segmentation, and exports | TODO | Later |
+| Product priority | Feature flow is not yet ranked | Cocktail detail and education first; quiz, recommendations, and bars support it | ZR/team | Confirmed |
+| Routing | Local page string | Preserve the prototype navigation and connect it to Phase 1 URL-based detail destinations | ZR | Planned |
+| Backend/API | No backend in prototype | Node.js/Express.js Phase 1 application API | ZR | Confirmed |
+| Database | No database in prototype | Supabase PostgreSQL Phase 1 production database | ZR | Confirmed |
+| Data source | Static JavaScript | API/database source of truth; static fixtures for development | ZR | Planned |
+| Backend framework | Not applicable in prototype | Node.js and Express.js | ZR | Confirmed |
+| Database engine | Not applicable in prototype | Supabase PostgreSQL | ZR | Confirmed |
+| Identity/authentication | No user identity | Supabase Auth for customers and Mixology admins; no bar-owner role | CX/ZR | Confirmed |
+| Type system | JavaScript/JSX application files | Use JavaScript/JSX for Phase 1; `cocktails.js` is the prototype fixture | ZR | Confirmed |
+| Search | Explorer filtering | Phase 1 direct cocktail/bar results using the documented PostgreSQL ranking rules | ZR | Planned |
+| Recommendations | Fixed array slices | Phase 1 scoring from quiz answers, popularity, and approved activity; no ratings | CX/ZR | Planned |
+| Saved cocktails | Not implemented | Authenticated customers can save and revisit cocktails | CX/ZR | Planned |
+| Serving-bar access | Static bar relationships | Authenticated customers load serving-bar summaries through a protected endpoint | ZR/LY | Planned |
+| Map | CSS mock map | OneMap with real coordinates | LY | Confirmed |
+| Media storage | External image URLs | Supabase Storage for Mixology-managed media | ZR | Confirmed |
+| Cocktail detail metadata | Static `cocktailDetails.js` | ZR-owned database seed data and Phase 1 API source | ZR | Planned |
+| 3D viewer | CSS-based presentation | Keep CSS viewer in Phase 1; true model later | ZR | Confirmed |
+| History narration | Browser Web Speech API | Keep as optional Phase 1 enhancement | ZR | Planned |
+| Bar detail page | Not implemented | Phase 1 bar detail route and page | LY | Planned |
+| Partner promotions | Static partner flag and promo | Phase 1 static/admin-managed active promotions | LY/ZR | Planned |
+| Partner profile ownership | Mixology-managed in Phase 1 | Future internal Mixology admin page; no bar-owner access | LY/ZR | Long term |
+| Mobile filters | Bottom-sheet code present but trigger hidden | Complete Phase 1 responsive behavior | CX | Planned |
+| Content taxonomy | Vocabulary is not final | Use initial non-empty seed strings; approve the controlled vocabulary before final filters and recommendations | ZR/CX/LY | Deferred |
+| Analytics events | Not implemented | Approve event list, store events in Supabase, and provide a CX-owned Mixology-admin dashboard | CX/ZR | Pending approval |
+| Advanced analytics | Not implemented | Later-phase reporting, segmentation, and exports | CX/ZR | Later |
 
 ## 22. Definition of done for the design
 
@@ -1275,9 +1434,13 @@ Mobile:
 - [ ] Navigation and URL behavior are approved.
 - [ ] Persistence approach is approved.
 - [ ] Supabase Auth login requirements and Supabase Storage access rules are approved.
+- [ ] Customer login is required for quiz submission, saved cocktails, and serving-bar access.
+- [ ] No bar-owner sign-up, sign-in, or role is included in Phase 1.
+- [ ] ZR owns the Supabase schema, migrations, initial cocktail seed data, Node.js/Express.js API, and shared integration.
 - [ ] OneMap provider and coordinate model are approved.
 - [ ] Partner-promotion rules are approved.
 - [ ] Analytics events and privacy expectations are approved before tracking is enabled.
+- [ ] CX owns the admin analytics interface and ZR owns its database tables and migrations.
 - [ ] Responsive and accessibility requirements are testable.
 - [ ] Phase 1 API boundaries, hosting provider, and database operations are approved.
 - [ ] True model-based 3D and advanced analytics are recorded as later-phase decisions.

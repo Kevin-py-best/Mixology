@@ -1,8 +1,12 @@
 # Mixology — High-Level Design
 
-> **Status:** PHASE 1  
-> **Version:** 1.1  
-> **Date:** 2026-08-15
+> **Status:** PHASE 1
+>
+> **Version:** 1.3
+>
+> **Date:** 2026-08-17
+>
+> **Related document:** [Agent Handoff](./AGENT_HANDOFF.md)
 
 ## 1. Document purpose
 
@@ -36,7 +40,8 @@ The product direction is an elevated, editorial alternative to a generic nightli
 - Connect cocktails to the venues that serve them after the user has explored the drink.
 - Give returning users useful personalized recommendations.
 - Create a clear but restrained placement for partner bars.
-- Help partner bars maintain accurate profiles, cocktail listings, and promotions over the long term.
+- Keep bar profiles, cocktail listings, and promotions accurate through Mixology-managed data.
+- Provide a future internal Mixology admin page for easier bar-detail management.
 - Establish a foundation that can evolve from a static prototype into a production application.
 
 ### Technical goals
@@ -92,16 +97,17 @@ Phase 1 will turn the current prototype into an interactive cocktail-education a
 #### Core cocktail-education experience
 
 - URL-based cocktail detail routing.
-- First-class cocktail history, origin, taste, tasting notes, spirit, strength, occasion, and drinker information.
+- First-class cocktail history, origin, taste tags, tasting notes, multiple spirits, five-level alcoholic intensity, multiple occasions, and drinker information.
 - Interactive 3D-style cocktail viewer.
 - Browser read-aloud support for cocktail history.
-- Serving-bar relationships shown after the user explores the cocktail.
+- Protected serving-bar relationships shown after the user explores the cocktail and authenticates.
 
 #### Supporting discovery experience
 
 - Complete Explorer filtering and sorting.
 - Search that opens the relevant cocktail or bar directly.
 - Account creation and login through Supabase Auth for personalized features.
+- Saved cocktails for authenticated customers.
 - Recommendation scoring based on quiz answers and approved user activity.
 - Persistent user preferences and quiz history.
 
@@ -116,9 +122,9 @@ Phase 1 will turn the current prototype into an interactive cocktail-education a
 - Lightweight, privacy-conscious analytics for approved product events.
 - Mixology-admin analytics dashboard backed by Supabase event data.
 
-Users can browse and learn about public cocktail content without logging in. Login is required for the taste quiz, saved preferences, and account-based recommendations.
+Users can browse and learn about public cocktail content without logging in. Login is required before taking the quiz, saving cocktails they like, or viewing the bars that serve a cocktail. The login requirement protects personalized and bar-discovery features while keeping the educational cocktail content public.
 
-Phase 1 partner promotions may be managed through static data or Mixology administration. A self-service partner dashboard is not required for Phase 1.
+Phase 1 partner promotions may be managed through static data or Mixology administration. There is no bar-owner self-service dashboard in Phase 1. User reviews and user ratings are not part of Phase 1.
 
 The Phase 1 analytics event list must be agreed with stakeholders before implementation. Approved events will be stored in Supabase and displayed in a Mixology-admin analytics dashboard. Session recording, advertising tracking, and detailed behavioral profiles are not included in the initial analytics scope.
 
@@ -128,17 +134,17 @@ The Phase 1 analytics event list must be agreed with stakeholders before impleme
 - Advanced analytics reporting, segmentation, and exports.
 - More advanced personalization and cross-session behavioral modeling.
 
-### Long-term partner platform goal
+### Future internal bar-management goal
 
-A long-term goal of Mixology is to help partner bars maintain their own business information through a partner portal. This may include:
+A future goal of Mixology is to create an internal administration page for the Mixology team to manage bar information more efficiently. This may include:
 
-- Maintaining the bar profile, description, images, neighborhood, and vibe.
-- Updating cocktails served by the bar.
-- Creating and maintaining promotions.
-- Submitting changes for Mixology review and approval.
-- Viewing the status of profile and promotion updates.
+- Updating bar profiles, descriptions, images, neighborhoods, and vibes.
+- Updating the cocktails served by each bar.
+- Managing featured placement and promotions.
+- Reordering or arranging bar-detail content through a drag-and-drop interface.
+- Publishing or hiding bar information.
 
-Phase 1 will use Mixology-managed partner information. The long-term partner portal will give bars more direct ownership while preserving Mixology’s quality, approval, and featured-placement controls.
+There will be no bar-owner account or bar-owner self-service page in Phase 1. The future management page is for the Mixology team, not for partner bars to access directly.
 
 ## 5. Post-Phase 1 scope
 
@@ -149,7 +155,7 @@ The following capabilities are intentionally excluded from Phase 1. They are pla
 - Payments or subscriptions.
 - User-generated cocktail recipes.
 - Social feeds or direct messaging.
-- A self-service partner business dashboard.
+- An internal drag-and-drop bar-management page.
 - Advanced partner promotion scheduling and management.
 - Full customer relationship management for bars.
 - Alcohol sales or age-verification workflows.
@@ -167,7 +173,7 @@ Phase 1 will still support basic partner visibility, featured placement, and sta
 3. Explores the interactive visual presentation.
 4. Reads the taste profile, origin, facts, and history.
 5. Uses read-aloud if preferred.
-6. Looks at bars that serve the cocktail.
+6. Signs in if needed and opens the protected slideshow of bars that serve the cocktail.
 
 ### New visitor
 
@@ -211,12 +217,12 @@ Visitors may browse public cocktail and bar content without logging in, but they
 3. Receives a partner or featured listing managed by Mixology.
 4. Receives visibility through relevant cocktail discovery flows.
 
-During Phase 1, Mixology administrators will create and manage partner-bar profiles, featured placement, and promotions on behalf of partner bars. In the long term, Mixology will provide a partner portal so bars can maintain this information themselves, subject to review and approval.
+During Phase 1, Mixology manages partner-bar profiles, featured placement, and promotions on behalf of partner bars. Partner bars do not sign in to Mixology or edit the displayed information. A future internal administration page may make this work easier for the Mixology team.
 
 ### Mixology administrator
 
 1. Signs in through an administrative account.
-2. Creates, updates, reviews, and publishes partner-bar profiles and promotions.
+2. Creates, updates, and publishes partner-bar profiles and promotions through Mixology-managed tools or data workflows.
 3. Controls featured placements and promotion visibility.
 4. Views approved analytics in the Mixology administration dashboard.
 
@@ -232,7 +238,7 @@ flowchart LR
     WebApp --> Fonts["Google Fonts"]
 ```
 
-The current application has no backend, database, authentication layer, real search service, or real map provider. Page navigation and user state are held in React state.
+The current application has no backend, database, authentication layer, real search service, or real map provider. The prototype already supports navigation between its main screens and cocktail view; page navigation and user state are currently held in React state.
 
 ### Phase 1 target context
 
@@ -317,17 +323,18 @@ The frontend should not own the production source of truth. Static data may rema
 
 - Display cocktail cards.
 - Open a cocktail view page from a selected cocktail card.
-- Present taste, origin, drinker profile, spirit, strength, and occasion.
-- Present bars that serve the selected cocktail.
+- Present taste tags, origin, drinker profile, multiple spirits, five-level alcoholic intensity, and multiple occasions.
+- Present the bars that serve the selected cocktail only after the customer is authenticated.
+- Allow authenticated customers to save cocktails they like.
 - Present cocktail history and optional browser read-aloud support.
 - Search cocktails by relevant text fields.
 - Filter by supported attributes.
-- Sort by popularity, name, newest, or rating.
+- Sort by popularity, name, or newest.
 - Show a meaningful empty state.
 
 ### Quiz and preferences
 
-- Capture spirit, flavor, strength, and occasion preferences.
+- Capture spirit, taste-tag, strength, and occasion preferences.
 - Validate that each question is answered.
 - Produce a structured quiz-response object.
 - Pass answers into recommendation logic.
@@ -335,7 +342,7 @@ The frontend should not own the production source of truth. Static data may rema
 ### Recommendations
 
 - Match quiz responses to cocktail attributes.
-- Optionally include ratings, popularity, and user activity.
+- Include quiz matches, popularity, and approved user activity.
 - Explain the recommendation context to the user.
 
 ### Bar discovery
@@ -350,8 +357,9 @@ The frontend should not own the production source of truth. Static data may rema
 ### Data management
 
 - Provide cocktail, bar, promotion, and user preference data.
-- Store cocktail history, origin, taste description, tasting notes, spirit, strength, occasion, drinker profile, and read-aloud content as first-class cocktail-detail data.
+- Store cocktail history, origin, taste description, taste tags, tasting notes, multiple spirits, five-level alcoholic intensity, multiple occasions, drinker profile, and read-aloud content as first-class cocktail-detail data.
 - Store serving-bar relationships as first-class data so users can move from learning about a cocktail to finding where to experience it.
+- ZR will provide the initial cocktail content and images; Phase 1 will not introduce a separate cocktail-content review workflow.
 - Provide promotion status, schedule, call-to-action, and terms for Phase 1 partner offers.
 - Hide data-source details from presentation components.
 - Use the Phase 1 API and database as the production source of truth.
@@ -360,9 +368,13 @@ The frontend should not own the production source of truth. Static data may rema
 ### Backend and database
 
 - Expose secure API endpoints for cocktails, bars, promotions, users, preferences, recommendations, search, and analytics events.
-- Verify Supabase Auth sessions before allowing quiz submission or personalized user-data requests.
+- ZR owns the Node.js/Express.js backend API and acts as the integration owner for the shared application shell, API contracts, and branch integration.
+- CX defines the API requirements for the homepage, quiz, customer authentication, and admin analytics features.
+- LY defines the API requirements for bars, bar details, OneMap data, and promotions.
+- Verify Supabase Auth sessions before allowing quiz submission, saved-cocktail requests, serving-bar requests, or personalized user-data requests.
 - Validate and authorize data changes before writing them to the database.
 - Store persistent user preferences and approved discovery activity.
+- Store saved-cocktail relationships for authenticated customers.
 - Store partner-bar profiles and promotion schedules.
 - Use Supabase Storage for Mixology-managed cocktail, bar, and promotion images.
 - Provide an administrator-only dashboard for approved discovery and promotion analytics.
@@ -380,6 +392,7 @@ The main business entities are:
 - `Promotion`
 - `QuizResponse`
 - `Recommendation`
+- `SavedCocktail`
 - `UserActivity`
 - `PartnerProfile`
 
@@ -389,6 +402,7 @@ High-level relationships:
 User submits QuizResponse
 QuizResponse is used to generate Recommendations
 Recommendation points to Cocktail
+User saves Cocktail through SavedCocktail
 Cocktail is served by Bar
 Cocktail has CocktailDetailMetadata
 Bar may have PartnerProfile
@@ -519,8 +533,8 @@ sequenceDiagram
 - Validate and sanitize future partner-managed content.
 - Keep secrets and API keys out of the client bundle.
 - Use Supabase Auth for account creation, login, session management, and authenticated API access.
-- Require authentication before quiz submission, preference storage, or personalized recommendations.
-- Authorize administrative and future partner workflows separately from ordinary user access.
+- Require customer authentication before quiz submission, preference storage, saving cocktails, viewing serving bars, or personalized recommendations.
+- Authorize internal Mixology administration separately from ordinary customer access.
 - Protect database credentials and service-to-service secrets.
 - Do not enable analytics collection until the event list and privacy expectations are approved.
 - Do not use session recording, advertising profiles, or unnecessary identity tracking in Phase 1.
@@ -584,6 +598,7 @@ The current prototype does not yet provide:
 - Real map data or marker clustering.
 - Real search-result routing.
 - URL-based routing for cocktail views.
+- Saved-cocktail collection and protected serving-bar access.
 - A true model-based 3D cocktail viewer; the current viewer is CSS-based.
 - Phase 1 recommendation scoring and persistent preferences.
 - Phase 1 lightweight analytics; the event list still requires stakeholder approval.
@@ -597,15 +612,16 @@ These limitations should remain visible until the corresponding work is complete
 | Product focus | Prototype mixes discovery, recommendations, and bar content | Cocktail education and detail page are the Phase 1 primary experience | Confirmed |
 | Backend and database | Static data today | Node.js/Express.js API with Supabase PostgreSQL as the Phase 1 production source of truth | Confirmed |
 | Backend technology | Not applicable in prototype | Node.js runtime and Express.js API framework; API hosting remains open | Confirmed |
-| User accounts | Not implemented | Supabase Auth required before quiz and personalized recommendations | Confirmed |
+| User accounts | Not implemented | Supabase Auth for customers; admin access is restricted to Mixology staff; no bar-owner role | Confirmed |
 | Recommendation method | Fixed prototype slices today | Phase 1 scoring from quiz answers and user activity | Planned |
 | Search behavior | Explorer filtering today | Phase 1 direct cocktail/bar routing | Planned |
 | Map provider | Stylized CSS map today | OneMap for Phase 1 real coordinates | Confirmed |
 | Cocktail view routing | Local `cocktail` page state today | Phase 1 URL-based routing | Planned |
 | Cocktail 3D viewer | CSS-based interactive presentation | Keep CSS viewer in Phase 1; true model later | Planned |
 | History read-aloud | Browser Web Speech API | Keep as optional Phase 1 enhancement | Planned |
-| Partner management | Static partner flag and promo | Phase 1 static/admin-managed promotions | Planned |
-| Analytics events | Not implemented | Approve event list, store events in Supabase, and provide a Mixology-admin dashboard | Pending approval |
+| Partner management | Static partner flag and promo | Phase 1 displayed/admin-managed bar information; future internal drag-and-drop admin page | Planned |
+| Saved cocktails | Not implemented | Authenticated customers can save and revisit cocktails | Planned |
+| Analytics events | Not implemented | Approve event list, store events in Supabase, and provide a CX-owned Mixology-admin dashboard | Pending approval |
 | Advanced analytics | Not implemented | Later-phase reporting, segmentation, and exports | Later |
 | Production hosting | TODO | Hosting provider to be decided | Open |
 
@@ -614,11 +630,12 @@ These limitations should remain visible until the corresponding work is complete
 - [ ] Product goals confirmed.
 - [ ] Scope and non-scope confirmed.
 - [ ] Current versus target architecture confirmed.
-- [ ] Phase 1 backend, database, and data ownership decisions confirmed.
+- [ ] Phase 1 backend, database, data ownership, and ZR integration-owner decisions confirmed.
 - [ ] Phase 1 API boundaries and deployment model confirmed.
 - [ ] Search and recommendation direction confirmed.
 - [ ] OneMap configuration and production hosting provider confirmed.
 - [ ] Supabase Auth and Supabase Storage configuration confirmed.
+- [ ] No bar-owner sign-up, sign-in, or role is included in Phase 1.
 - [ ] Phase 1 partner-promotion rules confirmed.
 - [ ] Phase 1 analytics events and privacy expectations approved.
 - [ ] Advanced analytics and true model-based 3D viewer recorded as later-phase items.
