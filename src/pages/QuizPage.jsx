@@ -2,46 +2,33 @@ import { useState } from 'react'
 
 const questions = [
   {
-    key: 'spirit',
-    label: 'What spirit do you reach for?',
-    options: [
-      { value: 'Vodka', desc: null },
-      { value: 'Gin', desc: null },
-      { value: 'Whiskey', desc: null },
-      { value: 'Rum', desc: null },
-      { value: 'Tequila', desc: null },
-      { value: 'Surprise me', desc: null },
-    ],
-  },
-  {
     key: 'flavor',
-    label: 'What flavor profile calls to you?',
+    label: 'What kind of flavour do you usually enjoy?',
     options: [
-      { value: 'Citrus & Bright', desc: 'Zesty, refreshing, high-acid' },
-      { value: 'Rich & Stirred', desc: 'Booze-forward, warming, complex' },
-      { value: 'Tropical', desc: 'Fruit-led, summery, easy-drinking' },
-      { value: 'Bitter & Herbal', desc: 'Aperitif-style, layered, acquired' },
-      { value: 'Floral & Delicate', desc: 'Light, fragrant, low-ABV' },
-      { value: 'Smoky & Dark', desc: 'Mezcal, peated whisky, earthy depth' },
+      { value: 'Sweet & fruity', desc: null },
+      { value: 'Sour & refreshing', desc: null },
+      { value: 'Bitter & bold', desc: null },
+      { value: 'Smooth & creamy', desc: null },
     ],
   },
   {
-    key: 'strength',
-    label: 'How strong do you like it?',
+    key: 'vibe',
+    label: 'Which description sounds most like you?',
     options: [
-      { value: 'Light & Easy', desc: 'Under 8% ABV — approachable, sessionable' },
-      { value: 'Balanced', desc: '8–18% — enough presence without the weight' },
-      { value: 'Strong & Bold', desc: 'Over 18% — spirit-forward, built to sip slowly' },
+      { value: 'Fun and energetic', desc: null },
+      { value: 'Chill and easy-going', desc: null },
+      { value: 'Bold and adventurous', desc: null },
+      { value: 'Classy and sophisticated', desc: null },
     ],
   },
   {
-    key: 'occasion',
-    label: "What's the occasion, most often?",
+    key: 'style',
+    label: 'What kind of drink are you looking for today?',
     options: [
-      { value: 'After Dinner', desc: 'Digestifs and contemplative sips' },
-      { value: 'First Date', desc: 'Accessible, crowd-pleasing, never wrong' },
-      { value: 'Business Drinks', desc: 'Polished, measured, professional' },
-      { value: 'Weekend Unwind', desc: 'Relaxed pacing, nothing to prove' },
+      { value: 'Light and refreshing', desc: null },
+      { value: 'Fruity and easy to drink', desc: null },
+      { value: 'Strong with a noticeable kick', desc: null },
+      { value: 'Something unique and different', desc: null },
     ],
   },
 ]
