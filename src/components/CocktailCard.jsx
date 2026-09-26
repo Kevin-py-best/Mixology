@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useState } from "react"
 
 export default function CocktailCard({ cocktail, featured, compact = false, rank, badge, onClick }) {
   const [hovered, setHovered] = useState(false)
+  const imageUrl = cocktail.img.includes("images.unsplash.com")
+    ? `${cocktail.img}${
+        cocktail.img.includes("?") ? "&" : "?"
+      }w=480&h=360&fit=crop&auto=format`
+    : cocktail.img
 
-  const handleKeyDown = event => {
+  const handleKeyDown = (event) => {
     if (!onClick) return
-    if (event.key === 'Enter' || event.key === ' ') {
+
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault()
+
       onClick()
     }
   }
@@ -17,7 +24,7 @@ export default function CocktailCard({ cocktail, featured, compact = false, rank
       onMouseLeave={() => setHovered(false)}
       onClick={onClick}
       onKeyDown={handleKeyDown}
-      role={onClick ? 'button' : undefined}
+      role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       style={{
         backgroundColor: hovered ? '#2C2A27' : '#232220',
@@ -39,11 +46,15 @@ export default function CocktailCard({ cocktail, featured, compact = false, rank
           src={`${cocktail.img}?w=480&h=360&fit=crop&auto=format`}
           alt={cocktail.name}
           style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transform: hovered ? 'scale(1.03)' : 'scale(1)',
-            transition: 'transform 0.4s ease',
+            width: "100%",
+
+            height: "100%",
+
+            objectFit: "cover",
+
+            transform: hovered ? "scale(1.03)" : "scale(1)",
+
+            transition: "transform 0.4s ease",
           }}
         />
         {rank && (
@@ -115,25 +126,52 @@ export default function CocktailCard({ cocktail, featured, compact = false, rank
           }}>
             {cocktail.name}
           </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0, marginLeft: '8px' }}>
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="#B8863E"><polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5" /></svg>
-            <span style={{ fontSize: '12px', color: '#B8863E', fontFamily: 'Inter, sans-serif' }}>{cocktail.rating}</span>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "3px",
+              flexShrink: 0,
+              marginLeft: "8px",
+            }}
+          >
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="#B8863E">
+              <polygon points="6,1 7.5,4.5 11,5 8.5,7.5 9,11 6,9.5 3,11 3.5,7.5 1,5 4.5,4.5" />
+            </svg>
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#B8863E",
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
+              {cocktail.rating}
+            </span>
           </div>
         </div>
         <p style={{ fontSize: '12px', color: '#9C9589', margin: compact ? '0 0 8px' : '0 0 10px', fontFamily: 'Inter, sans-serif' }}>
           {cocktail.spirit} · {cocktail.bar}
         </p>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {cocktail.tags.slice(0, 2).map(tag => (
-            <span key={tag} style={{
-              fontSize: '10px',
-              color: '#9C9589',
-              border: '1px solid rgba(156,149,137,0.3)',
-              padding: '2px 8px',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              fontFamily: 'Inter, sans-serif',
-            }}>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+          {cocktail.tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              style={{
+                fontSize: "10px",
+
+                color: "#9C9589",
+
+                border: "1px solid rgba(156,149,137,0.3)",
+
+                padding: "2px 8px",
+
+                letterSpacing: "0.06em",
+
+                textTransform: "uppercase",
+
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
               {tag}
             </span>
           ))}

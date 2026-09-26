@@ -9,20 +9,25 @@ import Navbar from './components/Navbar'
 import { cocktails } from './data/cocktails'
 
 export default function App() {
-  const [page, setPage] = useState('home')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [page, setPage] = useState("home")
+
+  const [searchQuery, setSearchQuery] = useState("")
+
   const [quizAnswers, setQuizAnswers] = useState(null)
+
   const [selectedCocktail, setSelectedCocktail] = useState(null)
   const [selectedBar, setSelectedBar] = useState(null)
   const [cocktailReturnPage, setCocktailReturnPage] = useState('explorer')
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers)
-    setPage('home')
+
+    setPage("home")
   }
 
   const openCocktail = (cocktail, returnPage) => {
     setSelectedCocktail(cocktail)
+
     setCocktailReturnPage(returnPage)
     setPage('cocktail')
   }
@@ -38,23 +43,23 @@ export default function App() {
         <Navbar currentPage={page === 'bar-detail' ? 'bars' : page} onNavigate={setPage} onSearch={setSearchQuery} />
       )}
       <main>
-        {page === 'home' && (
+        {page === "home" && (
           <HomePage
             onNavigate={setPage}
             quizAnswers={quizAnswers}
-            onSelectCocktail={cocktail => openCocktail(cocktail, 'home')}
+            onSelectCocktail={(cocktail) => openCocktail(cocktail, "home")}
           />
         )}
-        {page === 'quiz' && (
+        {page === "quiz" && (
           <QuizPage
             onComplete={handleQuizComplete}
-            onBack={() => setPage('home')}
+            onBack={() => setPage("home")}
           />
         )}
-        {page === 'explorer' && (
+        {page === "explorer" && (
           <ExplorerPage
             searchQuery={searchQuery}
-            onSelectCocktail={cocktail => openCocktail(cocktail, 'explorer')}
+            onSelectCocktail={(cocktail) => openCocktail(cocktail, "explorer")}
           />
         )}
         {page === 'bars' && <BarsPage onSelectBar={openBar} />}
@@ -68,6 +73,7 @@ export default function App() {
         )}
         {page === 'cocktail' && selectedCocktail && (
           <CocktailDetailPage
+            slug={selectedCocktail.slug}
             cocktail={selectedCocktail}
             onBack={() => setPage(cocktailReturnPage)}
             onNavigate={setPage}
