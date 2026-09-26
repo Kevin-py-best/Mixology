@@ -2,9 +2,9 @@
 
 > **Status:** DRAFT
 >
-> **Version:** 1.0
+> **Version:** 1.1
 >
-> **Date:** 2026-08-17
+> **Date:** 2026-09-26
 >
 > **Purpose:** Give CX, LY, and ZR’s coding agents one practical set of rules to follow during Phase 1 implementation.
 
@@ -47,8 +47,9 @@ Agents must follow these decisions:
 - Application roles: `customer` and `admin` only.
 - There is no `bar_owner` role, bar-owner account, bar-owner sign-in, or bar-owner route in Phase 1.
 - Bars are managed and displayed by Mixology.
-- Public cocktail education does not require login.
-- Login is required before submitting the quiz, saving cocktails, viewing the serving-bar slideshow, or receiving account-based recommendations.
+- Public cocktail education and bar-discovery content do not require login. This includes the serving-bar slideshow on a cocktail detail page.
+- Login is required before submitting the quiz, saving cocktails, or receiving account-based recommendations.
+- Personalized cocktail recommendations, presented in the customer experience as cocktails "Featured for you," require both an authenticated customer and a completed taste quiz.
 - `origin` is used. Do not add `placeOfBirth`.
 - `spirits` and `occasions` are arrays.
 - `tasteTags` is an array.
@@ -197,10 +198,19 @@ ZR coordinates shared changes to `App.jsx`, route handling, global navigation, a
 | Use browser read-aloud | Allowed | Allowed | Allowed |
 | Submit taste quiz | Login required | Allowed | Allowed if using customer flow |
 | Save cocktail | Login required | Allowed | Allowed if using customer flow |
-| View serving-bar slideshow | Login required | Allowed | Allowed if authorized |
+| View serving-bar slideshow | Allowed | Allowed | Allowed |
+| View personalized cocktails "Featured for you" | Login and completed quiz required | Allowed after completing quiz | Allowed after completing quiz if using customer flow |
 | View admin analytics | Not allowed | Not allowed by customer role | Allowed |
 
-The frontend may use Supabase Auth for sign-in, sign-up, session restoration, and logout. Production data requests must go through the Express API. The API verifies the Supabase bearer token and role.
+The frontend may use Supabase Auth for sign-in, sign-up, session restoration, and logout. Production data requests must go through the Express API. The API verifies the Supabase bearer token and role for protected requests.
+
+The personalization flow must follow these rules:
+
+1. A visitor may browse cocktail details, cocktail history, the serving-bar slideshow, general bar content, and bar detail pages without logging in.
+2. If an unauthenticated visitor selects the personalized "Featured for you" experience, send the visitor to `/login` and preserve the intended destination.
+3. After login, a customer without a completed taste quiz must complete `/quiz` before personalized featured cocktails are displayed.
+4. After quiz completion, load the customer's recommendations through the authenticated recommendations endpoint.
+5. "Featured for you" means a personalized cocktail recommendation. It must not be confused with a paid or partner-bar featured placement.
 
 ## 7. Shared data contract
 
@@ -246,7 +256,7 @@ type BarSummary = {
 }
 ```
 
-The serving-bar relationship is stored in the `bar_cocktails` database table and loaded through the protected endpoint. It is not a reason to omit any cocktail education field from the public detail response.
+The serving-bar relationship is stored in the `bar_cocktails` database table and loaded through the public serving-bar endpoint. The public cocktail detail and serving-bar responses together let visitors learn about a cocktail and discover where it is served without logging in.
 
 ## 8. Shared API contract
 
@@ -255,7 +265,7 @@ Initial Phase 1 endpoints:
 ```text
 GET    /api/v1/cocktails
 GET    /api/v1/cocktails/:cocktailId
-GET    /api/v1/cocktails/:cocktailId/serving-bars       customer login required
+GET    /api/v1/cocktails/:cocktailId/serving-bars       public
 GET    /api/v1/bars
 GET    /api/v1/bars/:barId
 GET    /api/v1/search?q={query}
@@ -281,6 +291,7 @@ API rules:
 - Return `Something went wrong.` for unexpected user-facing failures.
 - Keep technical error details in server logs.
 - Do not let a frontend branch silently change an endpoint or response shape.
+- `GET /api/v1/recommendations` requires an authenticated customer with a completed quiz. If the quiz is incomplete, return a documented state that sends the customer to `/quiz` rather than returning generic recommendations as if they were personalized.
 
 The API contract may change during Phase 1 development. Compatible additions should be documented and communicated. Breaking changes require the backend, affected frontend, tests, and this handoff document to be updated together. Do not silently rename, remove, or change the type of a field. If a breaking change is needed after release, use a new API version.
 
@@ -396,7 +407,9 @@ Phase 1 is complete only when:
 - History and read-aloud work.
 - The CSS viewer works with mouse, keyboard, reset, and error states.
 - Customer sign-in, sign-up, logout, and session restoration work.
-- Login gates protect the quiz, saved cocktails, recommendations, and serving-bar slideshow.
+- Login gates protect quiz submission, saved cocktails, and account-based recommendations.
+- Public visitors can view the serving-bar slideshow and follow its cards to public bar detail pages.
+- Personalized cocktails "Featured for you" appear only after customer login and quiz completion.
 - Saved cocktails persist in Supabase.
 - Quiz answers persist and recommendations use the approved Phase 1 scoring rules.
 - Bars and bar detail pages work.
