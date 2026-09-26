@@ -31,6 +31,17 @@ const questions = [
       { value: 'Something unique and different', desc: null },
     ],
   },
+  {
+    key: 'strength',
+    label: 'How strong do you like your cocktail?',
+    options: [
+      { value: 1, label: '1 — Very light', desc: 'Gentle, easy-going, and low intensity' },
+      { value: 2, label: '2 — Light', desc: 'A subtle kick that stays refreshing' },
+      { value: 3, label: '3 — Balanced', desc: 'Noticeable without being overpowering' },
+      { value: 4, label: '4 — Strong', desc: 'Spirit-forward with a confident kick' },
+      { value: 5, label: '5 — Very strong', desc: 'Bold, intense, and made for slow sipping' },
+    ],
+  },
 ]
 
 export default function QuizPage({ onComplete, onBack }) {
@@ -127,7 +138,7 @@ export default function QuizPage({ onComplete, onBack }) {
               const selected = current === opt.value
               return (
                 <button
-                  key={opt.value}
+                  key={`${q.key}-${opt.value}`}
                   onClick={() => select(opt.value)}
                   style={{
                     width: '100%',
@@ -182,7 +193,7 @@ export default function QuizPage({ onComplete, onBack }) {
                       margin: opt.desc ? '0 0 3px' : '0',
                       transition: 'color 0.15s',
                     }}>
-                      {opt.value}
+                      {opt.label ?? opt.value}
                     </p>
                     {opt.desc && (
                       <p style={{

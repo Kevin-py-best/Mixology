@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function CocktailCard({ cocktail, featured, onClick }) {
+export default function CocktailCard({ cocktail, featured, compact = false, rank, badge, onClick }) {
   const [hovered, setHovered] = useState(false)
 
   const handleKeyDown = event => {
@@ -21,16 +21,22 @@ export default function CocktailCard({ cocktail, featured, onClick }) {
       tabIndex={onClick ? 0 : undefined}
       style={{
         backgroundColor: hovered ? '#2C2A27' : '#232220',
-        border: featured ? '1px solid rgba(201,184,150,0.3)' : '1px solid rgba(240,235,225,0.08)',
+        border: hovered
+          ? '1px solid rgba(184,134,62,0.38)'
+          : featured
+            ? '1px solid rgba(201,184,150,0.3)'
+            : '1px solid rgba(240,235,225,0.08)',
         borderRadius: '2px',
         overflow: 'hidden',
         cursor: onClick ? 'pointer' : 'default',
-        transition: 'background-color 0.2s, border-color 0.2s',
+        transform: hovered ? 'translateY(-3px)' : 'translateY(0)',
+        boxShadow: hovered ? '0 14px 30px rgba(0,0,0,0.18)' : 'none',
+        transition: 'background-color 0.2s, border-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease',
       }}
     >
-      <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', backgroundColor: '#2C2A27' }}>
+      <div style={{ position: 'relative', aspectRatio: compact ? '16/9' : '4/3', overflow: 'hidden', backgroundColor: '#2C2A27' }}>
         <img
-          src={`${cocktail.img}&w=480&h=360&fit=crop&auto=format`}
+          src={`${cocktail.img}?w=480&h=360&fit=crop&auto=format`}
           alt={cocktail.name}
           style={{
             width: '100%',
@@ -40,6 +46,45 @@ export default function CocktailCard({ cocktail, featured, onClick }) {
             transition: 'transform 0.4s ease',
           }}
         />
+        {rank && (
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            minWidth: '27px',
+            height: '27px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(26,25,24,0.88)',
+            border: '1px solid rgba(201,184,150,0.42)',
+            color: '#C9B896',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '10px',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+          }}>
+            {String(rank).padStart(2, '0')}
+          </div>
+        )}
+        {badge && (
+          <div style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            backgroundColor: '#C9B896',
+            color: '#3D2E14',
+            border: '1px solid rgba(61,46,20,0.12)',
+            padding: '6px 9px',
+            fontFamily: 'Inter, sans-serif',
+            fontSize: '9px',
+            fontWeight: 600,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}>
+            {badge}
+          </div>
+        )}
         {featured && (
           <div style={{
             position: 'absolute',
@@ -58,11 +103,11 @@ export default function CocktailCard({ cocktail, featured, onClick }) {
           </div>
         )}
       </div>
-      <div style={{ padding: '16px' }}>
+      <div style={{ padding: compact ? '13px 14px 14px' : '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
           <h3 style={{
             fontFamily: 'Fraunces, serif',
-            fontSize: '18px',
+            fontSize: compact ? '16px' : '18px',
             fontWeight: 300,
             color: '#F0EBE1',
             lineHeight: 1.2,
@@ -75,7 +120,7 @@ export default function CocktailCard({ cocktail, featured, onClick }) {
             <span style={{ fontSize: '12px', color: '#B8863E', fontFamily: 'Inter, sans-serif' }}>{cocktail.rating}</span>
           </div>
         </div>
-        <p style={{ fontSize: '12px', color: '#9C9589', margin: '0 0 10px', fontFamily: 'Inter, sans-serif' }}>
+        <p style={{ fontSize: '12px', color: '#9C9589', margin: compact ? '0 0 8px' : '0 0 10px', fontFamily: 'Inter, sans-serif' }}>
           {cocktail.spirit} · {cocktail.bar}
         </p>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
