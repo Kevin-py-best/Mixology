@@ -30,10 +30,256 @@ html, body {
 }
 
 ::-webkit-scrollbar { width: 0; height: 0; }
-scrollbar-width: none;
+
+html {
+  scrollbar-width: none;
+}
 
 ::selection {
   background: rgba(184, 134, 62, 0.35);
+}
+
+.mobile-nav-panel {
+  display: none;
+}
+
+.home-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.home-primary-action,
+.home-secondary-action {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.home-primary-action {
+  padding: 14px 32px;
+  border: 1px solid #B8863E;
+  background: #B8863E;
+  color: #2E1F0C;
+}
+
+.home-secondary-action {
+  padding: 12px 0;
+  border: none;
+  border-bottom: 1px solid rgba(184, 134, 62, 0.45);
+  background: transparent;
+  color: #B8863E;
+}
+
+.home-primary-action:hover {
+  background: #C9974D;
+  border-color: #C9974D;
+  transform: translateY(-2px);
+}
+
+.home-secondary-action:hover {
+  color: #F0EBE1;
+  border-bottom-color: #F0EBE1;
+}
+
+.home-hero-caption {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  left: 18px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #F0EBE1;
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 300;
+}
+
+.home-hero-caption span {
+  color: #C9B896;
+  font-family: 'Inter', sans-serif;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.home-reveal {
+  animation: home-fade-up 0.65s ease both;
+}
+
+@keyframes home-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 900px) {
+  .home-hero {
+    grid-template-columns: 1fr 0.85fr !important;
+    gap: 28px !important;
+  }
+
+  .popular-cocktail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .home-experience-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-nav-inner {
+    height: 60px !important;
+    padding: 0 20px !important;
+  }
+
+  .desktop-nav-links,
+  .desktop-search {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+
+  .mobile-nav-panel {
+    display: block;
+    padding: 8px 20px 20px;
+    border-top: 1px solid rgba(240,235,225,0.06);
+    background: #1A1918;
+  }
+
+  .mobile-nav-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 14px;
+    border: 1px solid rgba(240,235,225,0.08);
+  }
+
+  .mobile-nav-links button {
+    min-height: 42px;
+    border: none;
+    border-right: 1px solid rgba(240,235,225,0.08);
+    background: #232220;
+    color: #9C9589;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .mobile-nav-links button:last-child {
+    border-right: none;
+  }
+
+  .mobile-nav-links button.is-active {
+    color: #B8863E;
+    background: rgba(184,134,62,0.08);
+  }
+
+  .mobile-nav-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .mobile-nav-search input {
+    min-width: 0;
+    border: 1px solid rgba(240,235,225,0.1);
+    background: #232220;
+    color: #F0EBE1;
+    padding: 10px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    outline: none;
+  }
+
+  .mobile-nav-search button {
+    border: 1px solid #B8863E;
+    background: #B8863E;
+    color: #2E1F0C;
+    padding: 0 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .home-page {
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+
+  .home-hero {
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+    padding-top: 28px !important;
+    margin-bottom: 32px !important;
+  }
+
+  .home-hero-title {
+    font-size: 38px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .home-hero-description {
+    margin-bottom: 22px !important;
+    font-size: 14px !important;
+    line-height: 1.55 !important;
+  }
+
+  .home-hero-actions {
+    gap: 14px;
+  }
+
+  .home-hero-image {
+    max-height: 170px !important;
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  .home-hero-caption {
+    right: 12px;
+    bottom: 10px;
+    left: 12px;
+  }
+
+  .popular-cocktail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-experience-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal {
+    animation: none;
+  }
+
+  .home-primary-action,
+  .home-secondary-action {
+    transition: none;
+  }
 }
 
 /* Cocktail detail page */

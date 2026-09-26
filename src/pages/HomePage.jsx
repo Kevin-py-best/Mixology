@@ -9,6 +9,8 @@ const tasteCategories = [
   { label: 'Bitter & Herbal', desc: 'Complex, aperitif-style', icon: '◇' },
   { label: 'Floral & Delicate', desc: 'Light, fragrant, low-ABV', icon: '○' },
   { label: 'Smoky & Dark', desc: 'Mezcal, peated whisky', icon: '●' },
+  { label: 'Sweet & Fruity', desc: 'Juicy, approachable, easy-drinking', icon: '✦' },
+  { label: 'Sour & Refreshing', desc: 'Tart, crisp, lively', icon: '◐' },
 ]
 
 const experienceCategories = [
@@ -17,6 +19,22 @@ const experienceCategories = [
   { label: 'Business Drinks', desc: 'Polished and professional' },
   { label: 'Weekend Unwind', desc: 'Relaxed, leisurely pacing' },
 ]
+
+const sectionTitleStyle = {
+  fontFamily: 'Fraunces, serif',
+  fontWeight: 300,
+  fontSize: '28px',
+  color: '#F0EBE1',
+  margin: 0,
+}
+
+const sectionHeaderStyle = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: '24px',
+  marginBottom: '24px',
+}
 
 export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) {
   const [heroHovered, setHeroHovered] = useState(false)
@@ -30,7 +48,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
   )
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 32px 96px' }}>
+    <div className="home-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 32px 96px' }}>
 
       {/* ── Hero ── */}
       {quizAnswers ? (
@@ -94,15 +112,15 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
         </section>
       ) : (
         // New user hero — no inline quiz
-        <section style={{
-          padding: '72px 0 0',
+        <section className="home-hero home-reveal" style={{
+          padding: '40px 0 0',
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '48px',
+          gridTemplateColumns: 'minmax(0, 1.08fr) minmax(360px, 0.92fr)',
+          gap: '44px',
           alignItems: 'center',
-          marginBottom: '80px',
+          marginBottom: '42px',
         }}>
-          <div>
+          <div className="home-hero-copy">
             <p style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: '11px',
@@ -113,7 +131,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
             }}>
               Singapore's cocktail compass
             </p>
-            <h1 style={{
+            <h1 className="home-hero-title" style={{
               fontFamily: 'Fraunces, serif',
               fontWeight: 300,
               fontSize: 'clamp(38px, 4vw, 56px)',
@@ -124,7 +142,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
             }}>
               Find the drink<br />that finds you.
             </h1>
-            <p style={{
+            <p className="home-hero-description" style={{
               fontFamily: 'Inter, sans-serif',
               fontSize: '15px',
               color: '#9C9589',
@@ -132,39 +150,36 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               marginBottom: '36px',
               maxWidth: '400px',
             }}>
-              Discover cocktails matched to your palate and the bars that pour them best — no guesswork, no generic lists.
+              Discover cocktails matched to your palate and the bars that pour them best. No guesswork, no generic lists.
             </p>
-            <button
-              onClick={() => onNavigate('quiz')}
-              style={{
-                backgroundColor: '#B8863E',
-                color: '#2E1F0C',
-                border: 'none',
-                padding: '14px 32px',
-                fontFamily: 'Inter, sans-serif',
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                transition: 'opacity 0.15s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
-              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-            >
-              Take the Taste Quiz
-            </button>
+            <div className="home-hero-actions">
+              <button
+                onClick={() => onNavigate('quiz')}
+                className="home-primary-action"
+              >
+                Take the Taste Quiz
+              </button>
+              <button
+                onClick={() => onNavigate('explorer')}
+                className="home-secondary-action"
+              >
+                Browse all cocktails →
+              </button>
+            </div>
           </div>
 
           {/* Hero image */}
           <div
+            className="home-hero-image"
             onMouseEnter={() => setHeroHovered(true)}
             onMouseLeave={() => setHeroHovered(false)}
             style={{
               position: 'relative',
-              aspectRatio: '3/4',
+              aspectRatio: '4/3',
+              maxHeight: '380px',
               overflow: 'hidden',
               backgroundColor: '#2C2A27',
+              border: '1px solid rgba(240,235,225,0.08)',
             }}
           >
             <img
@@ -183,14 +198,18 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               inset: 0,
               background: 'linear-gradient(to top, rgba(26,25,24,0.6) 0%, transparent 50%)',
             }} />
+            <div className="home-hero-caption">
+              <span>Featured pour</span>
+              Jungle Bird
+            </div>
           </div>
         </section>
       )}
 
       {/* ── Your Go-To Cocktails (post-quiz only) ── */}
       {quizAnswers && (
-        <section style={{ marginBottom: '72px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '28px' }}>
+        <section className="home-reveal" style={{ marginBottom: '72px' }}>
+          <div style={sectionHeaderStyle}>
             <div>
               <p style={{
                 fontFamily: 'Inter, sans-serif',
@@ -202,13 +221,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               }}>
                 Because you said you like {quizAnswers.flavor.toLowerCase()}
               </p>
-              <h2 style={{
-                fontFamily: 'Fraunces, serif',
-                fontWeight: 300,
-                fontSize: '28px',
-                color: '#F0EBE1',
-                margin: 0,
-              }}>
+              <h2 style={sectionTitleStyle}>
                 Your Go-To Cocktails
               </h2>
             </div>
@@ -245,17 +258,23 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
       )}
 
       {/* ── Popular in Singapore — always shown, label never changes ── */}
-      <section style={{ marginBottom: '72px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '28px' }}>
-          <h2 style={{
-            fontFamily: 'Fraunces, serif',
-            fontWeight: 300,
-            fontSize: '28px',
-            color: '#F0EBE1',
-            margin: 0,
-          }}>
-            Popular in Singapore
-          </h2>
+      <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '100ms' }}>
+        <div style={sectionHeaderStyle}>
+          <div>
+            <p style={{
+              fontFamily: 'Inter, sans-serif',
+              fontSize: '10px',
+              color: '#B8863E',
+              letterSpacing: '0.16em',
+              textTransform: 'uppercase',
+              margin: '0 0 6px',
+            }}>
+              Trending now
+            </p>
+            <h2 style={sectionTitleStyle}>
+              Popular in Singapore
+            </h2>
+          </div>
           <button
             onClick={() => onNavigate('explorer')}
             style={{
@@ -272,15 +291,18 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
             View All →
           </button>
         </div>
-        <div style={{
+        <div className="popular-cocktail-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '16px',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: '14px',
         }}>
-          {popularCocktails.map(c => (
+          {popularCocktails.map((c, index) => (
             <CocktailCard
               key={c.id}
               cocktail={c}
+              compact
+              rank={index === 0 ? undefined : index + 1}
+              badge={index === 0 ? 'Most popular' : undefined}
               onClick={() => onSelectCocktail(c)}
             />
           ))}
@@ -290,14 +312,8 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
       {hr()}
 
       {/* ── Browse by Taste ── */}
-      <section style={{ marginBottom: '72px' }}>
-        <h2 style={{
-          fontFamily: 'Fraunces, serif',
-          fontWeight: 300,
-          fontSize: '28px',
-          color: '#F0EBE1',
-          margin: '0 0 28px',
-        }}>Browse by Taste</h2>
+      <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '160ms' }}>
+        <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Taste</h2>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
@@ -328,15 +344,13 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
       </section>
 
       {/* ── Browse by Experience ── */}
-      <section style={{ marginBottom: '72px' }}>
-        <h2 style={{
-          fontFamily: 'Fraunces, serif',
-          fontWeight: 300,
-          fontSize: '28px',
-          color: '#F0EBE1',
-          margin: '0 0 28px',
-        }}>Browse by Experience</h2>
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+      <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '220ms' }}>
+        <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Experience</h2>
+        <div className="home-experience-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: '10px',
+        }}>
           {experienceCategories.map(exp => (
             <button
               key={exp.label}
@@ -344,11 +358,11 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               style={{
                 backgroundColor: '#232220',
                 border: '1px solid rgba(240,235,225,0.08)',
-                padding: '18px 24px',
+                padding: '14px 18px',
                 textAlign: 'left',
                 cursor: 'pointer',
                 transition: 'border-color 0.15s, background-color 0.15s',
-                minWidth: '200px',
+                minWidth: 0,
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.backgroundColor = '#2C2A27'
@@ -369,15 +383,9 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
       {hr()}
 
       {/* ── Featured Bar ── */}
-      <section>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '28px' }}>
-          <h2 style={{
-            fontFamily: 'Fraunces, serif',
-            fontWeight: 300,
-            fontSize: '28px',
-            color: '#F0EBE1',
-            margin: 0,
-          }}>Featured Bar</h2>
+      <section className="home-reveal" style={{ animationDelay: '280ms' }}>
+        <div style={sectionHeaderStyle}>
+          <h2 style={sectionTitleStyle}>Featured Bar</h2>
           <span style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: '10px',
