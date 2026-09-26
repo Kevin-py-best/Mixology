@@ -47,6 +47,7 @@ Agents must follow these decisions:
 - Application roles: `customer` and `admin` only.
 - There is no `bar_owner` role, bar-owner account, bar-owner sign-in, or bar-owner route in Phase 1.
 - Bars are managed and displayed by Mixology.
+- All bars use the same frontend carousel-slide, map-marker, and detail treatment. A database `featured` flag may prioritize carousel ordering, but it is not shown as a frontend section, badge, label, color, border, or alternate slide style.
 - Public cocktail education and bar-discovery content do not require login. This includes the serving-bar slideshow on a cocktail detail page.
 - Login is required before submitting the quiz, saving cocktails, or receiving account-based recommendations.
 - Personalized cocktail recommendations, presented in the customer experience as cocktails "Featured for you," require both an authenticated customer and a completed taste quiz.
@@ -129,7 +130,7 @@ LY owns:
 - Real bar coordinates.
 - Bar neighborhood and vibe information.
 - Bar-to-cocktail relationship requirements.
-- Partner-bar display requirements.
+- Bar ordering requirements, including database-only featured priority.
 - Promotion display requirements.
 
 LY should not create a bar-owner account, bar-owner route, or bar-owner dashboard.
@@ -210,7 +211,7 @@ The personalization flow must follow these rules:
 2. If an unauthenticated visitor selects the personalized "Featured for you" experience, send the visitor to `/login` and preserve the intended destination.
 3. After login, a customer without a completed taste quiz must complete `/quiz` before personalized featured cocktails are displayed.
 4. After quiz completion, load the customer's recommendations through the authenticated recommendations endpoint.
-5. "Featured for you" means a personalized cocktail recommendation. It must not be confused with a paid or partner-bar featured placement.
+5. "Featured for you" means a personalized cocktail recommendation. The separate database `featured` field for bars only affects ordering and is not shown to users.
 
 ## 7. Shared data contract
 
@@ -251,12 +252,13 @@ type BarSummary = {
   name: string
   neighborhood: string
   vibe: string
-  partner: boolean
   imageUrl?: string
 }
 ```
 
 The serving-bar relationship is stored in the `bar_cocktails` database table and loaded through the public serving-bar endpoint. The public cocktail detail and serving-bar responses together let visitors learn about a cocktail and discover where it is served without logging in.
+
+The API may return database-featured bars first. The frontend must render every returned bar with the same large carousel-slide, map-marker, and detail treatment and must not expose the internal featured status.
 
 ## 8. Shared API contract
 
