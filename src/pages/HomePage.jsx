@@ -345,7 +345,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
 
       {/* ── Browse by Experience ── */}
       <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '220ms' }}>
-        <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Experience</h2>
+        <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Occasions</h2>
         <div className="home-experience-grid" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
