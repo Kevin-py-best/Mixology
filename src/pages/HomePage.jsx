@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import CocktailCard from '../components/CocktailCard'
-import { cocktails, bars } from '../data/cocktails'
+import { cocktails } from '../data/cocktails'
+import { getBars } from '../services/bars'
+import useLiveData from '../hooks/useLiveData'
 
 const tasteCategories = [
   { label: 'Citrus & Bright', desc: 'Zesty, refreshing, high-acid', icon: '◎' },
@@ -36,9 +38,10 @@ const sectionHeaderStyle = {
   marginBottom: '24px',
 }
 
-export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) {
+export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, onSelectBar }) {
   const [heroHovered, setHeroHovered] = useState(false)
-  const featuredBar = bars[0]
+  const liveBars = useLiveData(getBars)
+  const featuredBar = liveBars.data[0]
   const popularCocktails = cocktails.slice(0, 4)
   const goToCocktails = cocktails.slice(0, 3)
   const personalizedCocktails = cocktails.slice(2, 6)
@@ -385,18 +388,9 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
       {/* ── Featured Bar ── */}
       <section className="home-reveal" style={{ animationDelay: '280ms' }}>
         <div style={sectionHeaderStyle}>
-          <h2 style={sectionTitleStyle}>Featured Bar</h2>
-          <span style={{
-            fontFamily: 'Inter, sans-serif',
-            fontSize: '10px',
-            color: '#C9B896',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
-            border: '1px solid rgba(201,184,150,0.35)',
-            padding: '3px 10px',
-          }}>Partner</span>
+          <h2 style={sectionTitleStyle}>Explore a bar</h2>
         </div>
-        <div style={{
+        {featuredBar ? <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           border: '1px solid rgba(201,184,150,0.25)',
@@ -404,8 +398,8 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
         }}>
           <div style={{ position: 'relative', minHeight: '320px', backgroundColor: '#2C2A27' }}>
             <img
-              src={`${featuredBar.img}?w=600&h=400&fit=crop&auto=format`}
-              alt={featuredBar.name}
+              src={featuredBar.img || undefined}
+              alt={featuredBar.imageAlt}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
             <div style={{
@@ -447,7 +441,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               color: '#9C9589',
               marginBottom: '16px',
             }}>
-              Known for the <em style={{ color: '#F0EBE1' }}>{featuredBar.cocktail}</em>
+              {featuredBar.description}
             </p>
             {featuredBar.promo && (
               <div style={{
@@ -462,7 +456,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               </div>
             )}
             <button
-              onClick={() => onNavigate('bars')}
+              onClick={() => onSelectBar(featuredBar)}
               style={{
                 alignSelf: 'flex-start',
                 backgroundColor: '#B8863E',
@@ -479,7 +473,10 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail }) 
               View Bar
             </button>
           </div>
-        </div>
+        </div> : <div role={liveBars.status === 'error' ? 'alert' : 'status'}>
+          <p>{liveBars.status === 'loading' ? 'Loading bars…' : liveBars.status === 'error' ? 'Unable to load bars.' : 'New bar profiles will appear here when they are available.'}</p>
+          {liveBars.status === 'error' && <button className="outline-action" onClick={liveBars.retry}>Try again</button>}
+        </div>}
       </section>
     </div>
   )

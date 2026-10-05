@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react"
 import useCocktailDetail from "../hooks/useCocktailDetail"
 import { getCocktailDetails } from "../data/cocktailDetails"
+import { getServingBars } from '../services/bars'
+import useLiveData from '../hooks/useLiveData'
+import BarCarousel from '../components/bars/BarCarousel'
 
 const STRENGTH_LEVELS = {
   Light: 1,
@@ -9,7 +12,7 @@ const STRENGTH_LEVELS = {
 }
 
 function createLegacyCocktail(cocktail) {
-  if (!cocktail) return null
+  if (!cocktail || typeof cocktail.id !== 'number') return null
 
   const details = getCocktailDetails(cocktail.id)
   const strengthName = details.strength.split(" · ")[0]
@@ -96,8 +99,10 @@ export default function CocktailDetailPage({
   slug,
   cocktail: fallbackCocktail,
   onBack,
+  onSelectBar,
 }) {
   const { cocktail, error, retry, status } = useCocktailDetail(slug)
+  const servingBars = useLiveData(getServingBars, cocktail?.id || null)
   const legacyCocktail = useMemo(
     () => createLegacyCocktail(fallbackCocktail),
     [fallbackCocktail],
@@ -332,13 +337,17 @@ export default function CocktailDetailPage({
               <h2>Where to drink it</h2>
             </div>
           </div>
-          <div className="serving-bars-empty">
+          {servingBars.status === 'loading' ? <p role="status">Loading serving bars…</p> : servingBars.status === 'error' ? (
+            <div role="alert"><p>Unable to load serving bars.</p><button className="outline-action" onClick={servingBars.retry}>Try again</button></div>
+          ) : servingBars.data.length > 0 ? (
+            <BarCarousel bars={servingBars.data} onSelectBar={onSelectBar} />
+          ) : <div className="serving-bars-empty">
             <p>Verified Singapore bar availability is being added.</p>
             <span>
               We will only show venues after the cocktail and current menu
               availability have been confirmed.
             </span>
-          </div>
+          </div>}
         </section>
 
         <section className="cocktail-history-card">

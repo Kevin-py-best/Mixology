@@ -6,10 +6,10 @@ export default function BarCarouselSlide({ bar, onSelect }) {
   return (
     <article className="bar-carousel-slide">
       <div className="bar-carousel-media">
-        {!imageFailed ? (
+        {!imageFailed && bar.img ? (
           <img
-            src={`${bar.img}?w=1800&h=1000&fit=crop&auto=format`}
-            alt={`${bar.name} interior`}
+            src={bar.img}
+            alt={bar.imageAlt || `${bar.name} interior`}
             onError={() => setImageFailed(true)}
           />
         ) : (

@@ -1,9 +1,16 @@
 import BarCarousel from '../components/bars/BarCarousel'
 import BarMapPreview from '../components/bars/BarMapPreview'
-import { bars } from '../data/cocktails'
+import { getBars } from '../services/bars'
+import useLiveData from '../hooks/useLiveData'
 
 export default function BarsPage({ onSelectBar }) {
-  const orderedBars = [...bars].sort((a, b) => Number(b.featured) - Number(a.featured))
+  const { data: orderedBars, status, retry } = useLiveData(getBars)
+  if (status !== 'success') return (
+    <div className="bars-index-page" role={status === 'error' ? 'alert' : 'status'}>
+      <h1>{status === 'loading' ? 'Loading bars…' : 'Unable to load bars'}</h1>
+      {status === 'error' && <button className="outline-action" onClick={retry}>Try again</button>}
+    </div>
+  )
 
   return (
     <div className="bars-index-page">
