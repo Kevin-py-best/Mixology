@@ -39,6 +39,208 @@ html, body {
   background: rgba(184, 134, 62, 0.35);
 }
 
+.account-page {
+  position: relative;
+  min-height: calc(100svh - 64px);
+  display: grid;
+  place-items: center;
+  padding: 36px 20px 56px;
+}
+
+.account-card {
+  width: 100%;
+  max-width: 420px;
+  padding: clamp(24px, 5vw, 36px);
+}
+
+.account-intro {
+  margin-bottom: 36px;
+  text-align: center;
+}
+
+.account-intro h1 {
+  font-style: normal;
+  letter-spacing: 0.1em;
+}
+
+.account-top-nav {
+  position: absolute;
+  top: 8px;
+  left: max(20px, calc((100% - 1136px) / 2));
+  display: flex;
+  justify-content: flex-start;
+}
+
+.account-back {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: #9C9589;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.account-eyebrow {
+  margin: 0 0 12px;
+  color: #C3A16A;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.account-card h1 {
+  margin: 0 0 16px;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(30px, 7vw, 40px);
+  line-height: 1.15;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.account-description {
+  color: #9C9589;
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0 0 28px;
+}
+
+.account-options,
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-primary,
+.account-secondary {
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid #C3A16A;
+  border-radius: 8px;
+  background: #C3A16A;
+  color: #2E1F0C;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.account-secondary {
+  background: transparent;
+  color: #C3A16A;
+}
+
+.account-primary:hover:not(:disabled) {
+  background: #D1B581;
+}
+
+.account-form label {
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.account-form input {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px;
+  border: 1px solid rgba(240, 235, 225, 0.2);
+  border-radius: 6px;
+  background: #1A1918;
+  color: #F0EBE1;
+  font-size: 16px;
+}
+
+.account-card :is(button, input):focus-visible {
+  outline: 2px solid #C9B896;
+  outline-offset: 3px;
+}
+
+.account-card :disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.account-error,
+.account-message {
+  margin: 0;
+  padding: 12px;
+  border-radius: 6px;
+  background: #1A1918;
+  color: #F0EBE1;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.account-error {
+  color: #FFB4A6;
+}
+
+.account-switch {
+  margin: 8px 0 0;
+  color: #9C9589;
+  font-size: 12px;
+  text-align: center;
+}
+
+.account-switch button {
+  padding: 6px;
+  border: none;
+  background: none;
+  color: #C3A16A;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.session-loading {
+  padding: 48px 20px;
+  text-align: center;
+  color: #C9B896;
+}
+
+.profile-taste {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(201, 184, 150, 0.2);
+}
+
+.profile-taste h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.profile-taste dl {
+  margin: 20px 0;
+  font-size: 13px;
+}
+
+.profile-taste dt {
+  color: #9C9589;
+  margin-top: 12px;
+}
+
+.profile-taste dd {
+  margin: 4px 0;
+}
+
+.profile-taste p {
+  font-size: 13px;
+  color: #9C9589;
+  line-height: 1.6;
+}
+
+.profile-signout {
+  margin-top: 24px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  color: #C9B896;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .mobile-nav-panel {
   display: none;
 }
@@ -63,22 +265,31 @@ html, body {
 
 .home-primary-action {
   padding: 14px 32px;
-  border: 1px solid #B8863E;
-  background: #B8863E;
+  border: 1px solid #C3A16A;
+  border-radius: 8px;
+  background: #C3A16A;
   color: #2E1F0C;
+}
+
+.home-quiz-action {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .home-secondary-action {
   padding: 12px 0;
   border: none;
-  border-bottom: 1px solid rgba(184, 134, 62, 0.45);
   background: transparent;
-  color: #B8863E;
+  color: #C3A16A;
+  text-decoration: underline;
+  text-decoration-color: rgba(195, 161, 106, 0.5);
+  text-underline-offset: 6px;
 }
 
 .home-primary-action:hover {
-  background: #C9974D;
-  border-color: #C9974D;
+  background: #D1B581;
+  border-color: #D1B581;
   transform: translateY(-2px);
 }
 
@@ -89,14 +300,17 @@ html, body {
 
 .home-hero-caption {
   position: absolute;
+  top: 18px;
   right: 18px;
-  bottom: 16px;
-  left: 18px;
   z-index: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid rgba(240,235,225,0.14);
+  border-radius: 4px;
+  background: rgba(26,25,24,0.78);
   color: #F0EBE1;
   font-family: 'Fraunces', serif;
   font-size: 15px;
@@ -497,8 +711,12 @@ html, body {
 
 @media (max-width: 680px) {
   .site-nav-inner {
-    height: 60px !important;
+    height: 52px !important;
     padding: 0 20px !important;
+  }
+
+  .site-nav-inner > button:first-child span {
+    font-size: 20px !important;
   }
 
   .desktop-nav-links,
@@ -508,26 +726,31 @@ html, body {
 
   .mobile-menu-toggle {
     display: flex !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 17px !important;
+    border-radius: 4px;
   }
 
   .mobile-nav-panel {
     display: block;
-    padding: 8px 20px 20px;
+    padding: 12px 20px 16px;
     border-top: 1px solid rgba(240,235,225,0.06);
-    background: #1A1918;
+    background: #241C17;
   }
 
   .mobile-nav-links {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
     margin-bottom: 14px;
-    border: 1px solid rgba(240,235,225,0.08);
   }
 
   .mobile-nav-links button {
-    min-height: 42px;
-    border: none;
-    border-right: 1px solid rgba(240,235,225,0.08);
+    min-height: 38px;
+    padding: 8px;
+    border: 1px solid rgba(240,235,225,0.14);
+    border-radius: 4px;
     background: #232220;
     color: #9C9589;
     font-family: 'Inter', sans-serif;
@@ -535,10 +758,6 @@ html, body {
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-  }
-
-  .mobile-nav-links button:last-child {
-    border-right: none;
   }
 
   .mobile-nav-links button.is-active {
@@ -557,7 +776,7 @@ html, body {
     border: 1px solid rgba(240,235,225,0.1);
     background: #232220;
     color: #F0EBE1;
-    padding: 10px 12px;
+    padding: 8px 10px;
     font-family: 'Inter', sans-serif;
     font-size: 12px;
     outline: none;
@@ -581,15 +800,24 @@ html, body {
   }
 
   .home-hero {
-    grid-template-columns: 1fr !important;
-    gap: 22px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 28px !important;
     padding-top: 28px !important;
     margin-bottom: 32px !important;
   }
 
+  .home-hero-copy {
+    min-width: 0;
+  }
+
   .home-hero-title {
-    font-size: 38px !important;
-    margin-bottom: 14px !important;
+    font-size: clamp(32px, 8vw, 42px) !important;
+    width: 100%;
+    max-width: 280px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: left;
+    margin-bottom: 24px !important;
   }
 
   .home-hero-description {
@@ -599,18 +827,50 @@ html, body {
   }
 
   .home-hero-actions {
-    gap: 14px;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .home-primary-action,
+  .home-secondary-action {
+    width: 100%;
+    min-height: 40px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .home-secondary-action {
+    border: none;
   }
 
   .home-hero-image {
-    max-height: 170px !important;
-    aspect-ratio: 16 / 9 !important;
+    width: 100%;
+    min-width: 0;
+    height: clamp(340px, 50svh, 420px);
+    max-height: 420px !important;
+    aspect-ratio: auto !important;
+  }
+
+  .home-hero-image img {
+    display: block;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center;
+    transform: translateY(38px) scale(1.9) !important;
   }
 
   .home-hero-caption {
+    top: 12px;
     right: 12px;
-    bottom: 10px;
-    left: 12px;
+    font-size: 14px;
   }
 
   .popular-cocktail-grid {

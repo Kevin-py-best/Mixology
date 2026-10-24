@@ -47,15 +47,21 @@ const questions = [
 export default function QuizPage({ onComplete, onBack }) {
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   const q = questions[step]
   const current = answers[q.key] ?? ''
   const isLast = step === questions.length - 1
 
-  const goNext = () => {
-    if (!current) return
+  const goNext = async () => {
+    if (!current || saving) return
+    setSaveError('')
     if (isLast) {
-      onComplete(answers)
+      setSaving(true)
+      try { await onComplete(answers) }
+      catch (error) { setSaveError(error.message || 'Unable to save your answers. Please try again.') }
+      finally { setSaving(false) }
     } else {
       setStep(s => s + 1)
     }
@@ -138,6 +144,7 @@ export default function QuizPage({ onComplete, onBack }) {
               const selected = current === opt.value
               return (
                 <button
+                  disabled={saving}
                   key={`${q.key}-${opt.value}`}
                   onClick={() => select(opt.value)}
                   style={{
@@ -212,10 +219,12 @@ export default function QuizPage({ onComplete, onBack }) {
             })}
           </div>
 
+          {saveError && <p className="account-error" role="alert">{saveError}</p>}
           {/* Navigation */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <button
               onClick={goPrev}
+              disabled={saving}
               style={{
                 background: 'none',
                 border: 'none',
@@ -235,7 +244,7 @@ export default function QuizPage({ onComplete, onBack }) {
 
             <button
               onClick={goNext}
-              disabled={!current}
+              disabled={!current || saving}
               style={{
                 backgroundColor: current ? '#B8863E' : '#2C2A27',
                 color: current ? '#2E1F0C' : '#9C9589',
@@ -250,7 +259,7 @@ export default function QuizPage({ onComplete, onBack }) {
                 transition: 'all 0.2s',
               }}
             >
-              {isLast ? 'See my recommendations' : 'Next'}
+              {saving ? 'Saving your taste…' : isLast ? 'See my recommendations' : 'Next'}
             </button>
           </div>
         </div>
@@ -264,6 +273,7 @@ export default function QuizPage({ onComplete, onBack }) {
       }}>
         <button
           onClick={onBack}
+          disabled={saving}
           style={{
             background: 'none',
             border: 'none',

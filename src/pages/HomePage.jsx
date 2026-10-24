@@ -38,7 +38,7 @@ const sectionHeaderStyle = {
   marginBottom: '24px',
 }
 
-export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, onSelectBar }) {
+export default function HomePage({ onNavigate, quizAnswers, displayName, onSelectCocktail, onSelectBar }) {
   const [heroHovered, setHeroHovered] = useState(false)
   const liveBars = useLiveData(getBars)
   const featuredBar = liveBars.data[0]
@@ -76,7 +76,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
             margin: '0 0 32px',
             fontStyle: 'italic',
           }}>
-            Welcome back, Marcus.
+            Welcome back{displayName ? `, ${displayName}` : ''}.
           </h1>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
             {goToCocktails.map(c => (
@@ -124,16 +124,6 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
           marginBottom: '42px',
         }}>
           <div className="home-hero-copy">
-            <p style={{
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '11px',
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              color: '#B8863E',
-              marginBottom: '16px',
-            }}>
-              Singapore's cocktail compass
-            </p>
             <h1 className="home-hero-title" style={{
               fontFamily: 'Fraunces, serif',
               fontWeight: 300,
@@ -145,23 +135,15 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
             }}>
               Find the drink<br />that finds you.
             </h1>
-            <p className="home-hero-description" style={{
-              fontFamily: 'Inter, sans-serif',
-              fontSize: '15px',
-              color: '#9C9589',
-              lineHeight: 1.7,
-              marginBottom: '36px',
-              maxWidth: '400px',
-            }}>
-              Discover cocktails matched to your palate and the bars that pour them best. No guesswork, no generic lists.
-            </p>
             <div className="home-hero-actions">
-              <button
-                onClick={() => onNavigate('quiz')}
-                className="home-primary-action"
-              >
-                Take the Taste Quiz
-              </button>
+              <div className="home-quiz-action">
+                <button
+                  onClick={() => onNavigate('quiz')}
+                  className="home-primary-action"
+                >
+                  Take the Taste Quiz
+                </button>
+              </div>
               <button
                 onClick={() => onNavigate('explorer')}
                 className="home-secondary-action"
@@ -186,7 +168,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
             }}
           >
             <img
-              src="https://images.unsplash.com/photo-1500217052183-bc01eee1a74e?w=600&h=800&fit=crop&auto=format"
+              src="https://images.unsplash.com/photo-1500217052183-bc01eee1a74e?w=900&fit=max&auto=format"
               alt="Cocktail close-up"
               style={{
                 width: '100%',

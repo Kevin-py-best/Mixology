@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function Navbar({ currentPage, onNavigate, onSearch }) {
+export default function Navbar({ currentPage, onNavigate, onSearch, signedIn }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -48,8 +48,8 @@ export default function Navbar({ currentPage, onNavigate, onSearch }) {
       position: 'sticky',
       top: 0,
       zIndex: 50,
-      backgroundColor: '#1A1918',
-      borderBottom: '1px solid rgba(240,235,225,0.08)',
+      backgroundColor: '#241C17',
+      borderBottom: '1px solid rgba(201,184,150,0.24)',
       backdropFilter: 'blur(12px)',
     }}>
       <div className="site-nav-inner" style={{
@@ -83,6 +83,7 @@ export default function Navbar({ currentPage, onNavigate, onSearch }) {
           {navLink('Home', 'home')}
           {navLink('Cocktails', 'explorer')}
           {navLink('Bars', 'bars')}
+          {navLink(signedIn ? 'Profile' : 'Account', signedIn ? 'profile' : 'account')}
         </div>
 
         {/* Search */}
@@ -180,6 +181,7 @@ export default function Navbar({ currentPage, onNavigate, onSearch }) {
               ['Home', 'home'],
               ['Cocktails', 'explorer'],
               ['Bars', 'bars'],
+              [signedIn ? 'Profile' : 'Account', signedIn ? 'profile' : 'account'],
             ].map(([label, page]) => (
               <button
                 key={page}
