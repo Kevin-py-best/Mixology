@@ -14,7 +14,22 @@ export function mapBar(row) {
     img: row.image_url || '',
     imageAlt: row.image_alt || `${row.name} interior`,
     featured: row.is_featured,
+    partner: row.is_partner === true,
+    popularityScore: Number(row.popularity_score) || 0,
   }
+}
+
+export function sortBarsForSpotlight(bars) {
+  return [...bars].sort((a, b) =>
+    Number(b.partner) - Number(a.partner) ||
+    Number(b.featured) - Number(a.featured) ||
+    b.popularityScore - a.popularityScore ||
+    a.name.localeCompare(b.name)
+  )
+}
+
+export function getSpotlightBars(bars, limit = 5) {
+  return sortBarsForSpotlight(bars).slice(0, limit)
 }
 
 export async function getBars() {

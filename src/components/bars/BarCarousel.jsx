@@ -72,6 +72,8 @@ export default function BarCarousel({ bars, onSelectBar }) {
       <BarCarouselSlide
         key={activeBar.id}
         bar={activeBar}
+        position={activeIndex + 1}
+        total={bars.length}
         onSelect={() => onSelectBar(activeBar)}
       />
 

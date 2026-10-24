@@ -36,6 +36,18 @@ test('bar catalogue requests published, open bars from live data', async () => {
   assert.deepEqual(calls[0], ['from', 'bars'])
 })
 
+test('carousel fills up to five places from the full bar catalogue', () => {
+  const bars = [
+    { id: 'a', name: 'Atlas', featured: true, partner: false, popularityScore: 0 },
+    ...['Bamboo', 'Copper', 'Dusk', 'Ember', 'Fable', 'Grove'].map(name => ({
+      id: name, name, featured: false, partner: false, popularityScore: 0,
+    })),
+  ]
+  assert.deepEqual(service.getSpotlightBars(bars).map(bar => bar.name),
+    ['Atlas', 'Bamboo', 'Copper', 'Dusk', 'Ember'])
+  assert.equal(bars.length, 7)
+})
+
 test('bar menu uses the junction and maps live cocktail UUIDs', async () => {
   const calls = mockClient({ data: [{ cocktails: { id: 'a4c3a234-17d2-4bc8-886f-abf56dc328ed', slug: 'singapore-sling', name: 'Singapore Sling', image_url: 'image.jpg', image_alt: 'Sling' } }], error: null })
   const result = await service.getBarCocktails('03f575db-48dc-4010-bd5a-1f3c0ab7c628')

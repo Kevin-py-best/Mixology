@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import CocktailCard from '../components/CocktailCard'
 import { cocktails } from '../data/cocktails'
-import { getBars } from '../services/bars'
+import { getBars, getSpotlightBars } from '../services/bars'
 import useLiveData from '../hooks/useLiveData'
 
 const tasteCategories = [
@@ -41,7 +41,7 @@ const sectionHeaderStyle = {
 export default function HomePage({ onNavigate, quizAnswers, displayName, onSelectCocktail, onSelectBar }) {
   const [heroHovered, setHeroHovered] = useState(false)
   const liveBars = useLiveData(getBars)
-  const featuredBar = liveBars.data[0]
+  const featuredBar = getSpotlightBars(liveBars.data, 1)[0]
   const popularCocktails = cocktails.slice(0, 4)
   const goToCocktails = cocktails.slice(0, 3)
   const personalizedCocktails = cocktails.slice(2, 6)
