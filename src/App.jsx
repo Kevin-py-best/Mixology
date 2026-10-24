@@ -6,7 +6,6 @@ import BarsPage from './pages/BarsPage'
 import BarDetailPage from './pages/BarDetailPage'
 import CocktailDetailPage from './pages/CocktailDetailPage'
 import Navbar from './components/Navbar'
-import { cocktails } from './data/cocktails'
 
 export default function App() {
   const [page, setPage] = useState("home")
@@ -47,6 +46,7 @@ export default function App() {
           <HomePage
             onNavigate={setPage}
             quizAnswers={quizAnswers}
+            onSelectBar={openBar}
             onSelectCocktail={(cocktail) => openCocktail(cocktail, "home")}
           />
         )}
@@ -65,18 +65,20 @@ export default function App() {
         {page === 'bars' && <BarsPage onSelectBar={openBar} />}
         {page === 'bar-detail' && selectedBar && (
           <BarDetailPage
+            key={selectedBar.id}
             bar={selectedBar}
-            cocktails={cocktails}
             onBack={() => setPage('bars')}
             onSelectCocktail={cocktail => openCocktail(cocktail, 'bar-detail')}
           />
         )}
         {page === 'cocktail' && selectedCocktail && (
           <CocktailDetailPage
+            key={selectedCocktail.slug}
             slug={selectedCocktail.slug}
             cocktail={selectedCocktail}
             onBack={() => setPage(cocktailReturnPage)}
             onNavigate={setPage}
+            onSelectBar={openBar}
           />
         )}
       </main>

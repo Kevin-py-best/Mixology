@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import BarLocationMap from '../components/bars/BarLocationMap'
+import { getBarCocktails } from '../services/bars'
+import useLiveData from '../hooks/useLiveData'
 
-export default function BarDetailPage({ bar, cocktails, onBack, onSelectCocktail }) {
+export default function BarDetailPage({ bar, onBack, onSelectCocktail }) {
   const [imageFailed, setImageFailed] = useState(false)
-  const servedCocktails = (bar.cocktailIds || [])
-    .map(cocktailId => cocktails.find(cocktail => cocktail.id === cocktailId))
-    .filter(Boolean)
+  const { data: servedCocktails, status, retry } = useLiveData(getBarCocktails, bar.id)
+  const hasCoordinates = Number.isFinite(bar.latitude) && Number.isFinite(bar.longitude)
   const directionsUrl = `https://www.google.com/maps/search/?api=1&query=${bar.latitude},${bar.longitude}`
 
   return (
@@ -17,10 +18,10 @@ export default function BarDetailPage({ bar, cocktails, onBack, onSelectCocktail
 
         <section className="bar-detail-hero">
           <div className="bar-detail-image-wrap">
-            {!imageFailed ? (
+            {!imageFailed && bar.img ? (
               <img
-                src={`${bar.img}?w=1100&h=760&fit=crop&auto=format`}
-                alt={`${bar.name} interior`}
+                src={bar.img}
+                alt={bar.imageAlt || `${bar.name} interior`}
                 onError={() => setImageFailed(true)}
               />
             ) : (
@@ -52,7 +53,9 @@ export default function BarDetailPage({ bar, cocktails, onBack, onSelectCocktail
                 <h2 id="cocktails-served-title">Cocktails served</h2>
                 <span>{String(servedCocktails.length).padStart(2, '0')}</span>
               </div>
-              {servedCocktails.length > 0 ? (
+              {status === 'loading' ? <p role="status">Loading cocktails…</p> : status === 'error' ? (
+                <div role="alert"><p>Unable to load cocktails served here.</p><button className="outline-action" onClick={retry}>Try again</button></div>
+              ) : servedCocktails.length > 0 ? (
                 <div className="bar-served-grid">
                   {servedCocktails.map(cocktail => (
                     <button
@@ -63,8 +66,8 @@ export default function BarDetailPage({ bar, cocktails, onBack, onSelectCocktail
                       aria-label={`View ${cocktail.name}`}
                     >
                       <img
-                        src={`${cocktail.img}?w=420&h=300&fit=crop&auto=format`}
-                        alt={`${cocktail.name} cocktail`}
+                        src={cocktail.img}
+                        alt={cocktail.imageAlt || `${cocktail.name} cocktail`}
                       />
                       <span>{cocktail.name}</span>
                     </button>
@@ -82,11 +85,11 @@ export default function BarDetailPage({ bar, cocktails, onBack, onSelectCocktail
             <p className="bar-detail-eyebrow">Find your way</p>
             <h2 id="bar-location-title">Location</h2>
             <address>{bar.address}</address>
-            <a className="bar-directions-action" href={directionsUrl} target="_blank" rel="noreferrer">
+            {hasCoordinates && <a className="bar-directions-action" href={directionsUrl} target="_blank" rel="noreferrer">
               Get directions <span aria-hidden="true">↗</span>
-            </a>
+            </a>}
           </div>
-          <BarLocationMap bar={bar} />
+          {hasCoordinates ? <BarLocationMap bar={bar} /> : <p>Location information is coming soon.</p>}
         </section>
       </div>
     </div>
