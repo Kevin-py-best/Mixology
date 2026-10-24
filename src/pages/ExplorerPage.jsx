@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import CocktailCard from '../components/CocktailCard'
 import { cocktails } from '../data/cocktails'
 
@@ -16,6 +16,36 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
   const [level, setLevel] = useState('')
   const [sort, setSort] = useState('Popularity')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const sheet = useRef(null)
+
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    sheet.current?.querySelector('button')?.focus()
+    const handleKeys = event => {
+      if (event.key === 'Escape') setSidebarOpen(false)
+      if (event.key !== 'Tab') return
+      const controls = sheet.current?.querySelectorAll('button, input, select')
+      if (!controls?.length) return
+      const first = controls[0]
+      const last = controls[controls.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeys)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeys)
+      previousFocus?.focus()
+    }
+  }, [sidebarOpen])
 
   const toggle = (arr, set, val) => {
     set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val])
@@ -46,36 +76,7 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
     return result
   }, [selectedFlavors, selectedSpirits, selectedOccasions, strength, level, sort, searchQuery])
 
-  const Checkbox = ({ label, checked, onChange }) => (
-    <label style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-      cursor: 'pointer',
-      padding: '4px 0',
-    }}>
-      <div
-        onClick={onChange}
-        style={{
-          width: '14px',
-          height: '14px',
-          border: checked ? '1px solid #B8863E' : '1px solid rgba(240,235,225,0.2)',
-          backgroundColor: checked ? '#B8863E' : 'transparent',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          transition: 'all 0.15s',
-        }}
-      >
-        {checked && <svg width="8" height="8" viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2" stroke="#2E1F0C" strokeWidth="1.5" fill="none" /></svg>}
-      </div>
-      <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '12px', color: checked ? '#F0EBE1' : '#9C9589', transition: 'color 0.15s' }}>{label}</span>
-    </label>
-  )
-
-  const SidebarContent = () => (
+  const renderSidebarContent = () => (
     <div>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9C9589', margin: '0 0 12px' }}>Flavour</p>
       <div style={{ marginBottom: '24px' }}>
@@ -153,7 +154,7 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
   )
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 32px 96px' }}>
+    <div className="explorer-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 32px 96px' }}>
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{
           fontFamily: 'Fraunces, serif',
@@ -172,6 +173,8 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
       <div style={{ display: 'none' }} className="mobile-filter-btn">
         <button
           onClick={() => setSidebarOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={sidebarOpen}
           style={{
             backgroundColor: '#232220',
             border: '1px solid rgba(240,235,225,0.12)',
@@ -188,15 +191,15 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '48px', alignItems: 'start' }}>
+      <div className="explorer-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '48px', alignItems: 'start' }}>
         {/* Sidebar */}
-        <aside style={{
+        <aside className="explorer-sidebar" style={{
           position: 'sticky',
           top: '80px',
           borderRight: '1px solid rgba(240,235,225,0.08)',
           paddingRight: '32px',
         }}>
-          <SidebarContent />
+          {renderSidebarContent()}
         </aside>
 
         {/* Main content */}
@@ -229,6 +232,7 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9C9589', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Sort</span>
               <select
+                aria-label="Sort cocktails"
                 value={sort}
                 onChange={e => setSort(e.target.value)}
                 style={{
@@ -268,7 +272,7 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
                   {filtered.length} cocktail{filtered.length !== 1 ? 's' : ''}
                 </span>
               </div>
-              <div style={{
+              <div className="explorer-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
                 gap: '16px',
@@ -289,6 +293,7 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
       {/* Mobile bottom sheet overlay */}
       {sidebarOpen && (
         <div
+          className="filter-overlay"
           onClick={() => setSidebarOpen(false)}
           style={{
             position: 'fixed',
@@ -298,6 +303,11 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
           }}
         >
           <div
+            className="filter-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filter-sheet-title"
+            ref={sheet}
             onClick={e => e.stopPropagation()}
             style={{
               position: 'absolute',
@@ -312,13 +322,23 @@ export default function ExplorerPage({ searchQuery, onSelectCocktail }) {
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-              <h3 style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, fontSize: '20px', color: '#F0EBE1', margin: 0 }}>Filters</h3>
-              <button onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#9C9589', fontSize: '20px', cursor: 'pointer' }}>×</button>
+              <h3 id="filter-sheet-title" style={{ fontFamily: 'Fraunces, serif', fontWeight: 300, fontSize: '20px', color: '#F0EBE1', margin: 0 }}>Filters</h3>
+              <button aria-label="Close filters" onClick={() => setSidebarOpen(false)} style={{ background: 'none', border: 'none', color: '#9C9589', fontSize: '20px', cursor: 'pointer' }}>×</button>
             </div>
-            <SidebarContent />
+            {renderSidebarContent()}
+            <button type="button" className="filter-apply-button" onClick={() => setSidebarOpen(false)}>Show {filtered.length} cocktails</button>
           </div>
         </div>
       )}
     </div>
+  )
+}
+
+function Checkbox({ label, checked, onChange }) {
+  return (
+    <label className="filter-checkbox">
+      <input type="checkbox" checked={checked} onChange={onChange} />
+      <span>{label}</span>
+    </label>
   )
 }

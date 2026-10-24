@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import CocktailCard from '../components/CocktailCard'
+import SwipeCarousel from '../components/SwipeCarousel'
 import { cocktails } from '../data/cocktails'
 import { getBars } from '../services/bars'
 import useLiveData from '../hooks/useLiveData'
@@ -56,7 +57,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
       {/* ── Hero ── */}
       {quizAnswers ? (
         // Post-quiz / returning user hero
-        <section style={{ padding: '72px 0 56px' }}>
+        <section className="home-returning-hero" style={{ padding: '72px 0 56px' }}>
           <p style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: '12px',
@@ -78,9 +79,9 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
           }}>
             Welcome back, Marcus.
           </h1>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '32px' }}>
+          <SwipeCarousel label="Your recent cocktails" className="home-recent-carousel">
             {goToCocktails.map(c => (
-              <div key={c.id} style={{
+              <button type="button" key={c.id} onClick={() => onSelectCocktail(c)} style={{
                 backgroundColor: '#232220',
                 border: '1px solid rgba(240,235,225,0.08)',
                 padding: '14px 18px',
@@ -93,9 +94,9 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
               >
                 <p style={{ fontFamily: 'Fraunces, serif', fontSize: '15px', fontWeight: 300, color: '#F0EBE1', margin: '0 0 4px' }}>{c.name}</p>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9C9589', margin: 0 }}>Last had at {c.bar}</p>
-              </div>
+              </button>
             ))}
-          </div>
+          </SwipeCarousel>
           <button
             onClick={() => onNavigate('bars')}
             style={{
@@ -212,7 +213,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
       {/* ── Your Go-To Cocktails (post-quiz only) ── */}
       {quizAnswers && (
         <section className="home-reveal" style={{ marginBottom: '72px' }}>
-          <div style={sectionHeaderStyle}>
+          <div className="home-section-heading" style={sectionHeaderStyle}>
             <div>
               <p style={{
                 fontFamily: 'Inter, sans-serif',
@@ -244,11 +245,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
               View All →
             </button>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '16px',
-          }}>
+          <SwipeCarousel label="Your go-to cocktails">
             {personalizedCocktails.map(c => (
               <CocktailCard
                 key={c.id}
@@ -256,13 +253,13 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
                 onClick={() => onSelectCocktail(c)}
               />
             ))}
-          </div>
+          </SwipeCarousel>
         </section>
       )}
 
       {/* ── Popular in Singapore — always shown, label never changes ── */}
       <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '100ms' }}>
-        <div style={sectionHeaderStyle}>
+        <div className="home-section-heading" style={sectionHeaderStyle}>
           <div>
             <p style={{
               fontFamily: 'Inter, sans-serif',
@@ -294,11 +291,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
             View All →
           </button>
         </div>
-        <div className="popular-cocktail-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gap: '14px',
-        }}>
+        <SwipeCarousel label="Popular in Singapore">
           {popularCocktails.map((c, index) => (
             <CocktailCard
               key={c.id}
@@ -309,7 +302,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
               onClick={() => onSelectCocktail(c)}
             />
           ))}
-        </div>
+        </SwipeCarousel>
       </section>
 
       {hr()}
@@ -317,12 +310,7 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
       {/* ── Browse by Taste ── */}
       <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '160ms' }}>
         <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Taste</h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-          gap: '1px',
-          backgroundColor: 'rgba(240,235,225,0.08)',
-        }}>
+        <SwipeCarousel label="Browse by taste">
           {tasteCategories.map(cat => (
             <button
               key={cat.label}
@@ -343,17 +331,13 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9C9589', margin: 0 }}>{cat.desc}</p>
             </button>
           ))}
-        </div>
+        </SwipeCarousel>
       </section>
 
       {/* ── Browse by Experience ── */}
       <section className="home-reveal" style={{ marginBottom: '72px', animationDelay: '220ms' }}>
         <h2 style={{ ...sectionTitleStyle, marginBottom: '24px' }}>Browse by Occasions</h2>
-        <div className="home-experience-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-          gap: '10px',
-        }}>
+        <SwipeCarousel label="Browse by occasions">
           {experienceCategories.map(exp => (
             <button
               key={exp.label}
@@ -380,17 +364,17 @@ export default function HomePage({ onNavigate, quizAnswers, onSelectCocktail, on
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: '#9C9589', margin: 0 }}>{exp.desc}</p>
             </button>
           ))}
-        </div>
+        </SwipeCarousel>
       </section>
 
       {hr()}
 
       {/* ── Featured Bar ── */}
       <section className="home-reveal" style={{ animationDelay: '280ms' }}>
-        <div style={sectionHeaderStyle}>
+        <div className="home-section-heading" style={sectionHeaderStyle}>
           <h2 style={sectionTitleStyle}>Explore a bar</h2>
         </div>
-        {featuredBar ? <div style={{
+        {featuredBar ? <div className="home-featured-bar" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           border: '1px solid rgba(201,184,150,0.25)',

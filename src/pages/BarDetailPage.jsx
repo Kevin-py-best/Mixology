@@ -2,6 +2,7 @@ import { useState } from 'react'
 import BarLocationMap from '../components/bars/BarLocationMap'
 import { getBarCocktails } from '../services/bars'
 import useLiveData from '../hooks/useLiveData'
+import SwipeCarousel from '../components/SwipeCarousel'
 
 export default function BarDetailPage({ bar, onBack, onSelectCocktail }) {
   const [imageFailed, setImageFailed] = useState(false)
@@ -56,7 +57,7 @@ export default function BarDetailPage({ bar, onBack, onSelectCocktail }) {
               {status === 'loading' ? <p role="status">Loading cocktails…</p> : status === 'error' ? (
                 <div role="alert"><p>Unable to load cocktails served here.</p><button className="outline-action" onClick={retry}>Try again</button></div>
               ) : servedCocktails.length > 0 ? (
-                <div className="bar-served-grid">
+                <SwipeCarousel label="Cocktails served here" className="bar-served-carousel">
                   {servedCocktails.map(cocktail => (
                     <button
                       type="button"
@@ -72,7 +73,7 @@ export default function BarDetailPage({ bar, onBack, onSelectCocktail }) {
                       <span>{cocktail.name}</span>
                     </button>
                   ))}
-                </div>
+                </SwipeCarousel>
               ) : (
                 <p className="bar-detail-empty">Cocktail information is coming soon.</p>
               )}

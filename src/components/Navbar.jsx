@@ -44,6 +44,7 @@ export default function Navbar({ currentPage, onNavigate, onSearch }) {
   )
 
   return (
+    <>
     <nav style={{
       position: 'sticky',
       top: 0,
@@ -203,5 +204,21 @@ export default function Navbar({ currentPage, onNavigate, onSearch }) {
         </div>
       )}
     </nav>
+      <div className="phone-tab-bar" role="navigation" aria-label="Primary navigation">
+        {[
+          { page: 'home', label: 'Home', path: 'M3 10.5 12 3l9 7.5M5 9v12h5v-7h4v7h5V9' },
+          { page: 'explorer', label: 'Cocktails', path: 'M4 3h16l-8 10L4 3Zm8 10v8m-5 0h10M6 6h12' },
+          { page: 'bars', label: 'Bars', path: 'M4 21V5l8-3v19m0-14h8v14M2 21h20M7 7h2m-2 4h2m-2 4h2m6-4h2m-2 4h2' },
+        ].map(item => {
+          const active = currentPage === item.page || (currentPage === 'cocktail' && item.page === 'explorer')
+          return (
+            <button type="button" key={item.page} aria-current={active ? 'page' : undefined} onClick={() => navigateAndClose(item.page)}>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={item.path} /></svg>
+              <span>{item.label}</span>
+            </button>
+          )
+        })}
+      </div>
+    </>
   )
 }

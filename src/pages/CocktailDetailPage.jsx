@@ -60,7 +60,7 @@ function formatAmount(ingredient) {
   return [amount, ingredient.unit].filter(Boolean).join(" ")
 }
 
-function DetailStatus({ title, message, onBack, onRetry }) {
+function DetailStatus({ title, message, onBack, onRetry, backLabel }) {
   return (
     <div className="cocktail-detail-page">
       <div className="cocktail-detail-shell">
@@ -86,7 +86,7 @@ function DetailStatus({ title, message, onBack, onRetry }) {
               className="cocktail-back-button"
               onClick={onBack}
             >
-              ← Back to cocktails
+              ← {backLabel}
             </button>
           </div>
         </section>
@@ -99,6 +99,7 @@ export default function CocktailDetailPage({
   slug,
   cocktail: fallbackCocktail,
   onBack,
+  backLabel = 'Back to cocktails',
   onSelectBar,
 }) {
   const { cocktail, error, retry, status } = useCocktailDetail(slug)
@@ -131,6 +132,7 @@ export default function CocktailDetailPage({
         title="Loading cocktail…"
         message="Gathering the taste, ingredients, and story behind this drink."
         onBack={onBack}
+        backLabel={backLabel}
       />
     )
   }
@@ -145,6 +147,7 @@ export default function CocktailDetailPage({
             : "We could not load this cocktail right now."
         }
         onBack={onBack}
+        backLabel={backLabel}
         onRetry={retry}
       />
     )
@@ -156,6 +159,7 @@ export default function CocktailDetailPage({
         title="Cocktail not found"
         message="This cocktail may not be published yet."
         onBack={onBack}
+        backLabel={backLabel}
       />
     )
   }
@@ -199,7 +203,7 @@ export default function CocktailDetailPage({
             className="cocktail-back-button"
             onClick={onBack}
           >
-            ← Back to cocktails
+            ← {backLabel}
           </button>
           <span className="cocktail-detail-kicker">
             {cocktail ? "Live cocktail profile" : "Preview cocktail profile"}

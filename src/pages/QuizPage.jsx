@@ -73,14 +73,14 @@ export default function QuizPage({ onComplete, onBack }) {
   const progressFill = ((step + (current ? 1 : 0)) / questions.length) * 100
 
   return (
-    <div style={{
+    <div className="quiz-page" style={{
       minHeight: '100vh',
       backgroundColor: '#1A1918',
       display: 'flex',
       flexDirection: 'column',
     }}>
       {/* Progress bar */}
-      <div style={{
+      <div className="quiz-progress" style={{
         height: '2px',
         backgroundColor: 'rgba(240,235,225,0.08)',
         position: 'fixed',
@@ -88,7 +88,7 @@ export default function QuizPage({ onComplete, onBack }) {
         left: 0,
         right: 0,
         zIndex: 10,
-      }}>
+      }} role="progressbar" aria-label="Quiz progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progressFill)}>
         <div style={{
           height: '100%',
           backgroundColor: '#B8863E',
@@ -98,7 +98,7 @@ export default function QuizPage({ onComplete, onBack }) {
       </div>
 
       {/* Content */}
-      <div style={{
+      <div className="quiz-content" style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
@@ -139,6 +139,7 @@ export default function QuizPage({ onComplete, onBack }) {
               return (
                 <button
                   key={`${q.key}-${opt.value}`}
+                  aria-pressed={selected}
                   onClick={() => select(opt.value)}
                   style={{
                     width: '100%',
@@ -213,7 +214,7 @@ export default function QuizPage({ onComplete, onBack }) {
           </div>
 
           {/* Navigation */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="quiz-navigation" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <button
               onClick={goPrev}
               style={{
@@ -257,7 +258,7 @@ export default function QuizPage({ onComplete, onBack }) {
       </div>
 
       {/* Back link at bottom-left */}
-      <div style={{
+      <div className="quiz-home-link" style={{
         position: 'fixed',
         bottom: '32px',
         left: '32px',
@@ -283,7 +284,7 @@ export default function QuizPage({ onComplete, onBack }) {
       </div>
 
       {/* Logo watermark */}
-      <div style={{
+      <div className="quiz-wordmark" style={{
         position: 'fixed',
         top: '24px',
         left: '50%',

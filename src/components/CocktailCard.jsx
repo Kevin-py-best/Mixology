@@ -43,7 +43,7 @@ export default function CocktailCard({ cocktail, featured, compact = false, rank
     >
       <div style={{ position: 'relative', aspectRatio: compact ? '16/9' : '4/3', overflow: 'hidden', backgroundColor: '#2C2A27' }}>
         <img
-          src={`${cocktail.img}?w=480&h=360&fit=crop&auto=format`}
+          src={imageUrl}
           alt={cocktail.name}
           style={{
             width: "100%",

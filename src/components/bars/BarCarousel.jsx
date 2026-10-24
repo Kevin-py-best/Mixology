@@ -4,6 +4,7 @@ import BarCarouselSlide from './BarCarouselSlide'
 export default function BarCarousel({ bars, onSelectBar }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const touchStartX = useRef(null)
+  const touchStartY = useRef(null)
   const lastWheelAt = useRef(0)
   const hasMultipleBars = bars.length > 1
 
@@ -34,20 +35,25 @@ export default function BarCarousel({ bars, onSelectBar }) {
 
   const handleTouchStart = event => {
     touchStartX.current = event.touches[0]?.clientX ?? null
+    touchStartY.current = event.touches[0]?.clientY ?? null
   }
 
   const handleTouchEnd = event => {
     if (touchStartX.current === null || !hasMultipleBars) return
     const endX = event.changedTouches[0]?.clientX ?? touchStartX.current
     const distance = endX - touchStartX.current
+    const verticalDistance = (event.changedTouches[0]?.clientY ?? touchStartY.current) - touchStartY.current
     touchStartX.current = null
-    if (Math.abs(distance) < 50) return
+    touchStartY.current = null
+    if (Math.abs(distance) < 50 || Math.abs(verticalDistance) >= Math.abs(distance)) return
     move(distance < 0 ? 1 : -1)
   }
 
   const handleWheel = event => {
     if (!hasMultipleBars) return
-    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+    // Vertical scrolling should move the page; only horizontal gestures change bars.
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return
+    const delta = event.deltaX
     const now = Date.now()
 
     if (Math.abs(delta) < 18 || now - lastWheelAt.current < 650) return

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import HomePage from './pages/HomePage'
 import QuizPage from './pages/QuizPage'
 import ExplorerPage from './pages/ExplorerPage'
@@ -17,6 +17,11 @@ export default function App() {
   const [selectedCocktail, setSelectedCocktail] = useState(null)
   const [selectedBar, setSelectedBar] = useState(null)
   const [cocktailReturnPage, setCocktailReturnPage] = useState('explorer')
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    document.getElementById('page-content')?.focus({ preventScroll: true })
+  }, [page, selectedCocktail, selectedBar])
 
   const handleQuizComplete = (answers) => {
     setQuizAnswers(answers)
@@ -37,11 +42,11 @@ export default function App() {
   }
 
   return (
-    <div style={{ backgroundColor: '#1A1918', minHeight: '100vh', color: '#F0EBE1' }}>
+    <div className={`mobile-app${page === 'quiz' ? ' is-quiz' : ''}`} style={{ backgroundColor: '#1A1918', minHeight: '100vh', color: '#F0EBE1' }}>
       {page !== 'quiz' && (
         <Navbar currentPage={page === 'bar-detail' ? 'bars' : page} onNavigate={setPage} onSearch={setSearchQuery} />
       )}
-      <main>
+      <main id="page-content" tabIndex={-1}>
         {page === "home" && (
           <HomePage
             onNavigate={setPage}
@@ -77,6 +82,7 @@ export default function App() {
             slug={selectedCocktail.slug}
             cocktail={selectedCocktail}
             onBack={() => setPage(cocktailReturnPage)}
+            backLabel={cocktailReturnPage === 'bar-detail' ? 'Back to bar' : cocktailReturnPage === 'home' ? 'Back to home' : 'Back to cocktails'}
             onNavigate={setPage}
             onSelectBar={openBar}
           />

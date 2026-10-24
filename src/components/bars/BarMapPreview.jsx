@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SwipeCarousel from '../SwipeCarousel'
 
 const neighborhoods = [
   { name: 'Clarke Quay', top: '48%', left: '30%' },
@@ -69,14 +70,14 @@ export default function BarMapPreview({ bars, onSelectBar }) {
         })}
       </div>
 
-      <div className="bars-accessible-list" aria-label="All bars list">
+      <SwipeCarousel className="bars-list-carousel" label="All bars in Singapore">
         {bars.map(bar => (
           <button type="button" key={bar.id} onClick={() => onSelectBar(bar)}>
             <span>{bar.name}</span>
             <small>{bar.neighborhood} · {bar.vibe}</small>
           </button>
         ))}
-      </div>
+      </SwipeCarousel>
     </>
   )
 }
